@@ -93,28 +93,6 @@ def load_html_template(file_path):
         html_content = file.read()
     return html_content
 
-def format_html(html_content, processed_evals):
-    """
-    Replaces placeholders in the HTML content with corresponding values from the processed_evals dictionary.
-
-    Parameters:
-    -----------
-    html_content : str
-        The HTML content with placeholders.
-    processed_evals : dict
-        A dictionary where the keys correspond to placeholder names in the HTML content,
-        and the values are the strings that will replace the placeholders.
-
-    Returns:
-    --------
-    str
-        The modified HTML content with placeholders replaced by the corresponding values.
-    """
-    for key, value in processed_evals.items():
-        placeholder = f"{{{key}}}"
-        html_content = html_content.replace(placeholder, value)
-    return html_content
-
 def write_html_file(file_path, content):
     """
     Writes the modified HTML content to a file.

@@ -1,9 +1,9 @@
 import logging
 import re
 import os
+
 from utils.compression import compress_text, decompress_text
 from jinja2 import Template
-import markdown
 
 def extract_section(file_path, flankPattern):
     """
@@ -129,19 +129,3 @@ def load_html_template(file_path):
     with open(file_path, 'r') as file:
         html_content = file.read()
     return html_content
-
-def convert_md_to_html(markdown_content):
-    """
-    Converts a markdown string to HTML.
-
-    Parameters:
-    -----------
-    markdown_content : str
-        The markdown content to be converted to HTML.
-
-    Returns:
-    --------
-    str
-        The HTML representation of the markdown content.
-    """
-    return markdown.markdown(markdown_content)
