@@ -646,7 +646,7 @@ def callGrumpyGSEA_reporter(referencePathwaysList, species, grumpyEvaluationFile
     "context_description": contextDescription,
     "outfile_name_prefix": outfileNamePrefix,
     "version": __version__,
-    "processed_evals": processedEvals  # Pass processedEvals as part of the dictionary
+    "processedEvals": processedEvals  # Pass processedEvals as part of the dictionary
     }
 
     # Format the HTML with the processedEvals values
