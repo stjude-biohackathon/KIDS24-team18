@@ -3,7 +3,7 @@
 # Define variables for paths and parameters
 GRUMPY_SCRIPT=./grumpy/grumpy.py
 # Update the API Key File Path
-API_KEY_FILE=.env
+API_KEY_FILE=.env #if using openai or ollama, please update the .env file with apikey
 API_TYPE=ollama #choose from azure, openai, ollama
 MODEL_NAME=medllama2 #choose from gpt-4o, gpt-4o-mini, llama3, meditron, medllama2
 
