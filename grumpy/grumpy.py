@@ -89,8 +89,8 @@ else:
 
     from math import ceil
     from utils.logger import CustomFormatter
-    from utils.html_processing import extract_section, decodeHTML, format_html, convert_md_to_html
-    from utils.utils import id_generator, load_template, str2bool, write_html_file, load_html_template
+    from utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
+    from utils.utils import id_generator, load_template, str2bool
     from utils.tokenization import getMaxTokenPerModel
     from utils.compression import compress_text, decompress_text
     from utils.peak_analysis import determinePkCalling, getPeakNumber
