@@ -20,4 +20,5 @@ python $GRUMPY_SCRIPT \
 -p $PROTOCOL_2 \
 -r $REPORT_2 \
 -k $API_KEY_FILE \
---apiType $API_TYPE
+--apiType $API_TYPE \
+--gptModel gpt-4o
