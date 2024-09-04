@@ -1,6 +1,7 @@
 import logging
 import re
 import os
+from utils.compression import compress_text, decompress_text
 
 def extract_section(file_path, flankPattern):
     """
@@ -69,7 +70,7 @@ def decodeHTML(protocol, inputHtml):
     
     lgr.info("The HTML file was decoded and saved as '{}.decoded.txt'.".format(inputHtml.replace(".html", "")))
 
-def format_html(html_content, processed_evals):
+def format_html(html_content, replacements):
     """
     Replaces placeholders in the HTML content with corresponding values from the processed_evals dictionary.
 
@@ -77,7 +78,7 @@ def format_html(html_content, processed_evals):
     -----------
     html_content : str
         The HTML content with placeholders.
-    processed_evals : dict
+    replacements : dict
         A dictionary where the keys correspond to placeholder names in the HTML content,
         and the values are the strings that will replace the placeholders.
 
@@ -86,9 +87,16 @@ def format_html(html_content, processed_evals):
     str
         The modified HTML content with placeholders replaced by the corresponding values.
     """
-    for key, value in processed_evals.items():
-        placeholder = f"{{{key}}}"
-        html_content = html_content.replace(placeholder, value)
+    for key, value in replacements.items():
+        # For dictionary keys like processedEvals["creative"], manually format the key
+        if isinstance(value, dict):
+            for subkey, subvalue in value.items():
+                placeholder = f'{{{{ processedEvals["{subkey}"] }}}}'
+                html_content = html_content.replace(placeholder, subvalue)
+        else:
+            placeholder = f'{{{{ {key} }}}}'  # Replacing {{ key }} with value
+            html_content = html_content.replace(placeholder, value)
+    
     return html_content
 
 def write_html_file(file_path, content):
