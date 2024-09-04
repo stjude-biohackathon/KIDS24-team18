@@ -38,7 +38,8 @@ def extract_section(file_path, flankPattern):
 
 def decodeHTML(protocol, inputHtml):
     """
-    Decodes specific sections of an HTML file based on the protocol and saves the decoded content to a text file.
+    Decodes specific sections of an HTML file based on the protocol and 
+    saves the decoded content to a text file.
 
     Parameters:
     -----------
@@ -52,7 +53,7 @@ def decodeHTML(protocol, inputHtml):
     None
     """
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
-    lgr.info("Decoding the HTML file '{}'.".format(inputHtml))
+    lgr.info("Decoding the HTML file '%s'.", inputHtml)
     
     # Depending on the protocol, extract and decode specific sections of the HTML file
     if protocol == "gsea":

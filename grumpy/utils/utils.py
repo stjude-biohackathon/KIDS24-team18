@@ -75,42 +75,6 @@ def load_template(protocol, folder="templates"):
     
     return content
 
-def load_html_template(file_path):
-    """
-    Reads the content of an HTML template file and returns it as a string.
-
-    Parameters:
-    -----------
-    file_path : str
-        The path to the HTML template file.
-
-    Returns:
-    --------
-    str
-        The content of the HTML file as a string.
-    """
-    with open(file_path, 'r') as file:
-        html_content = file.read()
-    return html_content
-
-def write_html_file(file_path, content):
-    """
-    Writes the modified HTML content to a file.
-
-    Parameters:
-    -----------
-    file_path : str
-        The path to the file where the modified HTML content will be saved.
-    content : str
-        The modified HTML content to be written to the file.
-
-    Returns:
-    --------
-    None
-    """
-    with open(file_path, 'w') as file:
-        file.write(content)
-
 def str2bool(v):
     """
     Convert a string representation of a boolean value to its corresponding boolean value.
