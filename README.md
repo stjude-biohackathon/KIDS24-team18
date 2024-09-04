@@ -4,7 +4,9 @@ Grumpy (Generative Research Utility Model in Python) is a tool designed to condu
 It utilizes Large Language Models (LLMs) such as OpenAI's GPT-4 (St. Jude Dedicated Instance) or other models like Llama
 from Meta.
 
-Grumpy is composed of a set of LLM Agents, each customized for specific tasks within the realm of biological data analysis. These agents are AI-driven entities designed to perform specialized tasks or interact with users by leveraging the capabilities of large language models to understand and generate human-like text.
+Grumpy is composed of a set of LLM Agents, each customized for specific tasks within the realm of biological data
+analysis. These agents are AI-driven entities designed to perform specialized tasks or interact with users by
+leveraging the capabilities of large language models to understand and generate human-like text.
 
 ## What is Biological Context Analysis (BCA)?
 
@@ -49,7 +51,7 @@ To set up Grumpy, you need to create a Python environment and install the requir
    ```
 
 5. **Run Grumpy**:
-   Once the dependencies are installed, you can start using Grumpy to perform Biological Context Analysis.
+   Once the dependencies are installed, you can start using grumpy!
 
 ## Usage
 
@@ -80,3 +82,5 @@ open an issue or submit a pull request.
 ## Contact
 
 For any inquiries, please contact:
+
+## Team Members
