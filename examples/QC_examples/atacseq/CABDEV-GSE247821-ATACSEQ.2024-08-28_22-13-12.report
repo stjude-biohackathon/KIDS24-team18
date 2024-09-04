@@ -1,0 +1,10 @@
+DESTINATION: /research_jude/rgs01_jude/groups/cab/projects/automapper/common/wrosikie/DEV_projects/gptHelper/KIDS24_publicDataPreprocessing/GSE247821_ATACseq_PIK3CA_hotspots_breat_cancer/mapping_hg38/CABDEV-GSE247821-ATACSEQ
+
+|   DUPLICATION (%) |   FRAGMENTS_NUCLEOSOME_FREE |   MAPPED (%) |   PEAKS_NUCLEOSOME_FREE |   READS_MAPPED_NONDUP |   READS_MAPPED_TOTAL |   READS_RAW |   READS_TRIMMED | SAMPLE                                  | STATUS   |
+|-------------------|-----------------------------|--------------|-------------------------|-----------------------|----------------------|-------------|-----------------|-----------------------------------------|----------|
+|             54.98 |                 31304590.00 |        98.85 |                  184060 |          159393106.00 |         354043508.00 |   367239396 |    358179829.00 | GSE247821-GSM7901246-MCF10A_WT_rep1     | PASS     |
+|             50.72 |                 28770210.00 |        98.82 |                  180365 |          136774743.00 |         277544611.00 |   300322354 |    280844554.00 | GSE247821-GSM7901247-MCF10A_WT_rep2     | PASS     |
+|             44.46 |                 26321566.00 |        98.89 |                  146327 |          123004222.00 |         221454873.00 |   235927958 |    223942350.00 | GSE247821-GSM7901248-MCF10A_E545K_rep1  | PASS     |
+|             68.69 |                 17973476.00 |        98.89 |                  160773 |           98029882.00 |         313136443.00 |   340500132 |    316637152.00 | GSE247821-GSM7901249-MCF10A_E545K_rep2  | PASS     |
+|             64.12 |                 27796483.00 |        97.14 |                  220919 |          146674037.00 |         408843292.00 |   460672622 |    420870293.00 | GSE247821-GSM7901250-MCF10A_H1047R_rep1 | PASS     |
+|             66.25 |                 14269648.00 |        97.37 |                  159086 |           78383987.00 |         232251390.00 |   254885218 |    238519522.00 | GSE247821-GSM7901251-MCF10A_H1047R_rep2 | PASS     |
