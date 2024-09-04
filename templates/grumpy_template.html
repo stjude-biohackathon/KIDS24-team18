@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no' />
+    <meta name='description' content='Biological Context Analysis using Grumpy (Generative Research Utility Model in Python)' />
+    <meta name='author' content='Wojciech Rosikiewicz @ Epigenetics team of the Center for Applied Bioiformatics (CAB)' />
+    <title>CAB-Grumpy BCA: {{ outfile_name_prefix }}</title>
+    <link rel='icon' type='image/x-icon' href='data:image/png;base64,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' />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.2/font/bootstrap-icons.min.css'>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .text-grey {
+            color: grey;
+        }
+        .small-font {
+            font-size: smaller;
+        }
+        .monospace {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body id='page-top'>
+    <!-- Navigation-->
+    <nav class='navbar navbar-expand-lg navbar-dark bg-dark fixed-top' id='mainNav'>
+        <div class='container px-4'>
+            <a class='navbar-brand' href='#page-top'>
+    <link rel='icon' type='image/x-icon' href='data:image/png;base64,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' />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    			CAB-Grumpy (v{{ version }})
+			</a>
+            <button class='navbar-toggler' type='button' data-bs-toggle='collapse' data-bs-target='#navbarResponsive' aria-controls='navbarResponsive' aria-expanded='false' aria-label='Toggle navigation'><span class='navbar-toggler-icon'></span></button>
+            <div class='collapse navbar-collapse' id='navbarResponsive'>
+                <ul class='navbar-nav ms-auto'>
+                    <li class='nav-item'><a class='nav-link' href='#about'>About</a></li>
+                    <li class='nav-item'><a class='nav-link' href='#BCA-result'>BCA-result</a></li>
+                    <li class='nav-item'><a class='nav-link' href='#contact'>Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- About section-->
+    <section id='about' style='padding-bottom: 20px;'>
+        <div class='container px-4'>
+            <div class='row gx-4 justify-content-center'>
+                <div class='col-lg-10' style='margin-top: 10px; margin-bottom: 10px;'>
+                    <h3>About CAB-Grumpy</h3>
+                    <p>
+                    	<b>CAB-Grumpy</b> (<b>C</b>enter for <b>A</b>pplied <b>B</b>ioinformatics - <b>G</b>enerative <b>R</b>esearch <b>U</b>tility <b>M</b>odel in <b>Py</b>thon) is a tool to run Biological Context Analysis (BCA) utilizing Large Language Model (LLM) from OpenAI St. Jude Dedicated GPT-4 Instance.
+					    The BCA assessment below was generated using Grumpy, <b>please review it carefully and skeptically as it may contain inaccurate information resulting from so called hallucinations</b> (read more about this phenomenon in LLM models for example in PMID <a href='https://pubmed.ncbi.nlm.nih.gov/36811129/'>36811129</a>).
+					</p>
+					
+					<p style='color: #640505;'>
+						Please note that this tool is currently in its alpha stage and is under active development. Your feedback is invaluable as we work to improve its features and functionality.
+					</p>
+                    
+                    <p>
+					  <button class='btn btn-light' type='button' data-bs-toggle='collapse' data-bs-target='#aboutGrumpy' aria-expanded='false' aria-controls='aboutGrumpy'>
+						Read more ...
+					  </button>
+					</p>
+					<div class='collapse' id='aboutGrumpy'>
+					  <div class='card card-body'>
+					  	<p>
+					  		<h5>What are the differences between Precise, Balanced and Creative versions of the results?</h5>
+					  		In this evaluation, CAB-Grumpy is being run in three modes that commonly correspond with three settings that tailor how much flexibility is given to the GPT-4 model to generate the 'creative' solutions.
+					  		<ul>
+					  			<li><b>Precise Mode (temperature=0.1, top_p=0.6):</b> prioritizes accuracy, coherence, and factual correctness; It minimizes randomness and focuses on generating concise and precise answers. Use precise mode when you need factual information, technical explanations, or when you want the model to adhere closely to the input context. In practice, for most of the BCA applications, we find the results from the precise mode the most desirable.</li>
+					  			<li><b>Balanced Mode (temperature=0.5, top_p=0.8):</b> strikes a middle ground between creativity and coherence; It aims to provide well-rounded responses that are both interesting and contextually relevant.</li>
+					  			<li><b>Creative Mode (temperature=0.85, top_p=0.9):</b> The purpose of using creative mode is to encourage the model to generate imaginative and novel responses. In this mode, the model introduces more randomness into its output. It explores a wider range of possibilities, leading to creative and unexpected text. Creative mode is useful when you want to analyze the data from the unique perspective or brainstorm ideas. When using the results from this mode, pay extra attention to the presence of hallucinations and make sure you review the content of the 'Sanity check' below the evaluation.</li>
+					  		</ul>
+					  	</p>
+					  	
+					  	<p>
+					  		<h5>What do the <code>temperature</code> and <code>top_p</code> parameters mean?</h5>
+					  		<ul>
+					  			<li><b>Temperature:</b>
+					  				<ul>
+					  					<li>The temperature parameter controls the randomness of the models output. It affects how diverse and creative the generated text is.</li>
+					  					<li>Specifically, when you set a higher temperature, the model becomes more exploratory and produces more varied responses. These responses might include unexpected or imaginative content.</li>
+					  					<li>Conversely, a lower temperature makes the output more deterministic and focused. It tends to generate more predictable and coherent text.</li>
+					  					<li>The temperature value ranges from 0 (no randomness - deterministic output) to 1 (maximum randomness - highly creative, but potentially less coherent)</li>
+					  				</ul>
+					  			</li>
+					  			<li><b>Top-p (Nucleus) Sampling:</b>
+					  				<ul>
+					  					<li>The top-p (or nucleus) sampling method restricts the models choices to the most probable tokens based on their cumulative probabilities.</li>
+					  					<li>When you set a lower top-p value, the model considers only a subset of the most likely tokens. This can lead to more focused and precise responses.</li>
+					  					<li>Higher top-p value allows the model to explore a broader range of possibilities, even if some tokens have lower probabilities.</li>
+					  					<li>The top_p value ranges from 0 (consider only the most probable token - deterministic output) to 1 (consider all tokens - more exploratory)</li>
+					  				</ul>
+					  			</li>
+					  		</ul>
+					  	</p>
+					  </div>
+					</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Services section-->
+    <section class='bg-light' id='BCA-result' style='padding-top: 20px; padding-bottom: 20px;'>
+        <div class='container px-4' style='margin-top: 10px; margin-bottom: 10px;'>
+            <div class='row gx-4 justify-content-center'>
+                <div class='col-lg-10'>
+                    <h3>Biological Context Evaluation</h3>
+                    
+                    <p>
+                    <b>Context description:</b><br>{{ context_description }}
+                    </p>
+                    
+                    <p>
+                    <br><b>Evaluation results:</b>
+                    </p>
+                    
+                    <ul class='nav nav-tabs' id='BCA-nav' role='tablist'>
+					  <li class='nav-item' role='presentation'>
+						<button class='nav-link active' id='precise-tab' data-bs-toggle='tab' data-bs-target='#precise' type='button' role='tab' aria-controls='precise' aria-selected='true'>Precise</button>
+					  </li>
+					  <li class='nav-item' role='presentation'>
+						<button class='nav-link' id='balanced-tab' data-bs-toggle='tab' data-bs-target='#balanced' type='button' role='tab' aria-controls='balanced' aria-selected='false'>Balanced</button>
+					  </li>
+					  <li class='nav-item' role='presentation'>
+						<button class='nav-link' id='creative-tab' data-bs-toggle='tab' data-bs-target='#creative' type='button' role='tab' aria-controls='creative' aria-selected='false'>Creative</button>
+					  </li>
+					</ul>
+					<div class='tab-content' id='BCA-content'>
+					  <div class='tab-pane fade show active' id='precise' role='tabpanel' aria-labelledby='precise-tab'>
+					  	<div id="markdown-content_precise">{{ processed_evals["precise"] }}</div>
+					  </div>
+					  
+					  <div class='tab-pane fade' id='balanced' role='tabpanel' aria-labelledby='balanced-tab'>
+					  	<div id="markdown-content_balanced">{{ processed_evals["balanced"] }}</div>
+					  </div>
+					  
+					  <div class='tab-pane fade' id='creative' role='tabpanel' aria-labelledby='creative-tab'>
+					  	<div id="markdown-content_creative">{{ processed_evals["creative"] }}</div>
+					  </div>
+					</div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Contact section-->
+    <section id='contact' style='padding-top: 20px; padding-bottom: 20px;'>
+        <div class='container px-4'>
+            <div class='row gx-4 justify-content-center'>
+                <div class='col-lg-10'>
+                    <h3>Contact us</h3>
+                    <p>Any questions, feedback, or concerns? Please feel free to reach out directly to <a href='mailto:wojciech.rosikiewicz@stjude.org'>Wojciech Rosikiewicz</a> (the active developer) or to our <a href='mailto:cab.helpdesk@stjude.org'>CAB-Epigenetics team email</a> with '[Epigenetics]' in the email subject.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer-->
+    <footer class='py-5 bg-dark'>
+        <div class='container px-4'><p class='m-0 text-center text-white'>Thank you for using CAB services for your analysis!</p></div>
+    </footer>
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/marked/marked.min.js'></script>
+    <script src="{{ url_for('static', filename='js/core.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const markdownContainer_precise = document.getElementById('markdown-content_precise');
+            markdownContainer_precise.innerHTML = marked.parse("{{ processed_evals['precise'] }}");
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const markdownContainer_balanced = document.getElementById('markdown-content_balanced');
+            markdownContainer_balanced.innerHTML = marked.parse("{{ processed_evals['balanced'] }}");
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const markdownContainer_creative = document.getElementById('markdown-content_creative');
+            markdownContainer_creative.innerHTML = marked.parse("{{ processed_evals['creative'] }}");
+        });
+    </script>
+</body>
+</html>

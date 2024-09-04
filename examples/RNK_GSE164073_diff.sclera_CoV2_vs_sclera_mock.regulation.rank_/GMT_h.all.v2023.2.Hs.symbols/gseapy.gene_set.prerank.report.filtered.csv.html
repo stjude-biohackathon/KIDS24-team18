@@ -1,0 +1,752 @@
+
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, user-scalable=no">
+                <title>GSEApy summary table:  - interactive version</title>
+
+                <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+                <link rel="stylesheet" href="https://cdn.datatables.net/searchbuilder/1.0.1/css/searchBuilder.dataTables.min.css">
+                <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.0/css/buttons.dataTables.min.css">
+                <link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.5.3/css/colReorder.dataTables.min.css">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
+                <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+                <script src="https://cdn.datatables.net/searchbuilder/1.0.1/js/dataTables.searchBuilder.min.js"></script>
+                <script src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+                <script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.html5.min.js"></script>
+                <script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.print.min.js"></script>
+        
+                <script src="https://cdn.datatables.net/colreorder/1.5.3/js/dataTables.colReorder.min.js"></script>
+                <script src="https://cdn.datatables.net/plug-ins/1.10.24/sorting/natural.js"></script>
+        
+
+            
+                    <script type="text/javascript" language="javascript" class="init">
+                    $(document).ready(function() {
+                        var table = $('#example').DataTable( {
+                            dom: 'QBfrtip',
+                            "iDisplayLength": 10,
+                            searchBuilder: {
+                                logic: 'AND'
+                            },
+                            lengthMenu: [
+                                [ 10, 25, 50, 100, -1 ],
+                                [ 'Show 10 rows', 'Show 25 rows', 'Show 50 rows', 'Show 100 rows', 'Show all' ]
+                            ],
+                            buttons: ['pageLength', 'copy', 'csv', 'excel', 'pdf', 'print'],
+                            colReorder: {realtime: false},
+                            columnDefs: [{ type: 'natural', targets: 1 }],
+                             "columnDefs": [{ "visible": false, "targets": [9, 10], className: 'hidden' }] 
+                        });
+    
+                        $('a.toggle-vis').on( 'click', function (e) {
+                            e.preventDefault();
+ 
+                            // Get the column API object
+                            var column = table.column( $(this).attr('data-column') );
+ 
+                            // Toggle the visibility
+                            column.visible( ! column.visible() );
+                        });
+                    });
+                    </script>
+
+                    
+                        </head>
+                        <body class="dt-example">
+                            <div class="container">
+                                <section>
+                                    <h1 style="color:#d9534f;">GSEApy summary table: </h1>
+                                    <div class="info" style="width: 50%;">
+                                        <p align="justify">
+                                            <i class="fa fa-hourglass" style="font-size:16px"></i> Loading of the entire data table (15.37 KB size) into the browser can take some time. Until its finished, table is displayed as plain text. Be patient, the page should reload soon.
+                                        </p>
+                                        <p align="justify">
+                                            <i class="fa fa-info-circle" style="font-size:16px"></i>&nbsp;&nbsp;Here you can explore the data, filtering them with generic "Search" field (located in the upper right of the table), or with more sophisticated queries using "Custom Search Builder" feature. Once finished, save filtered entries to the CSV or Excel file, or simply copy them to clipboard, all with buttons located in the upper left just above the table.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <hr style="color:#fbeded;height: 0.5px;">
+                                        Show/hide column: <a class="toggle-vis" data-column="1"><u><font color='blue'>Term</font></u></a> | <a class="toggle-vis" data-column="2"><u><font color='blue'>ES</font></u></a> | <a class="toggle-vis" data-column="3"><u><font color='blue'>NES</font></u></a> | <a class="toggle-vis" data-column="4"><u><font color='blue'>NOM p-val</font></u></a> | <a class="toggle-vis" data-column="5"><u><font color='blue'>FDR q-val</font></u></a> | <a class="toggle-vis" data-column="6"><u><font color='blue'>FWER p-val</font></u></a> | <a class="toggle-vis" data-column="7"><u><font color='blue'>Tag %</font></u></a> | <a class="toggle-vis" data-column="8"><u><font color='blue'>Gene %</font></u></a> | <a class="toggle-vis" data-column="9"><u><font color='blue'>Lead_genes</font></u></a> | <a class="toggle-vis" data-column="10"><u><font color='blue'>inGMT</font></u></a><br>
+                                        <hr style="color:#fbeded;height: 0.5px;">
+                                    </div>
+                        <table id="example" class="display" style="width:100%">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Term</th>
+      <th>ES</th>
+      <th>NES</th>
+      <th>NOM p-val</th>
+      <th>FDR q-val</th>
+      <th>FWER p-val</th>
+      <th>Tag %</th>
+      <th>Gene %</th>
+      <th>Lead_genes</th>
+      <th>inGMT</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td><a href="EnrichmentPlots/HALLMARK_E2F_TARGETS.svg" target="_blank">HALLMARK_E2F_TARGETS</a></td>
+      <td>-0.765690</td>
+      <td>-1.872163</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000</td>
+      <td>88/196</td>
+      <td>9.63%</td>
+      <td>PRPS1, RRM2, CDK1, TCF19, TK1, TUBB, MYBL2, SPC25, CDC25A, MCM5, AURKB, TACC3, AURKA, UBE2S, MKI67, CDCA8, ASF1B, MCM2, LMNB1, BIRC5, TOP2A, DIAPH3, SPAG5, SPC24, KIF2C, GINS1, MCM3, CDCA3, RNASEH2A, RACGAP1, HMMR, DEPDC1, MCM7, CENPE, TRIP13, KIF22, CDC20, CDKN2C, MAD2L1, LIG1, ATAD2, KIF18B, MCM6, MCM4, ORC6, JPT1, TUBG1, CTPS1, CKS1B, POLE, POLA2, ESPL1, MELK, DLGAP5, STMN1, PSMC3IP, PLK1, RFC2, TMPO, KIF4A, GINS4, KPNA2, RAD51AP1, UBE2T, HMGA1, HELLS, DCTPP1, H2AX, RAD1, RANBP1, PTTG1, BRCA1, CKS2, SNRPB, LYAR, HMGB2, PRIM2, RAD21, TRA2B, PLK4, BUB1B, NOLC1, SMC4, E2F8, RFC3, GINS3, DCLRE1B, SMC1A</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td><a href="EnrichmentPlots/HALLMARK_INTERFERON_GAMMA_RESPONSE.svg" target="_blank">HALLMARK_INTERFERON_GAMMA_RESPONSE</a></td>
+      <td>0.755194</td>
+      <td>1.866441</td>
+      <td>0.000000</td>
+      <td>0.001285</td>
+      <td>0.001</td>
+      <td>42/169</td>
+      <td>4.83%</td>
+      <td>TNFAIP6, SOD2, CFB, TNFAIP3, TNFAIP2, CCL2, NAMPT, NFKBIA, C1R, C1S, IFI44L, ICAM1, IFIH1, EPSTI1, IL6, IRF1, TNFSF10, PIM1, GCH1, PARP14, IFIT2, BTG1, APOL6, IL15RA, IRF2, NMI, IFI44, HERC6, MX1, DDX60, XAF1, SAMD9L, B2M, CCL7, RNF213, NLRC5, TAPBP, GBP4, IFNAR2, SAMHD1, BPGM, VCAM1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td><a href="EnrichmentPlots/HALLMARK_G2M_CHECKPOINT.svg" target="_blank">HALLMARK_G2M_CHECKPOINT</a></td>
+      <td>-0.708891</td>
+      <td>-1.766357</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000</td>
+      <td>96/197</td>
+      <td>11.69%</td>
+      <td>CDK1, UBE2C, MYBL2, CDC25A, MCM5, AURKB, TACC3, AURKA, UBE2S, MKI67, HSPA8, MCM2, GINS2, KIF23, LMNB1, BIRC5, TOP2A, CDC6, KIF2C, BUB1, TGFB1, MCM3, CDC45, TPX2, PRC1, RACGAP1, HMMR, TTK, CCNA2, CHAF1A, CENPE, KIF22, CDC20, CDKN2C, MAD2L1, EXO1, E2F1, RAD54L, MCM6, RASAL2, ORC6, JPT1, CCND1, SLC7A5, INCENP, NUSAP1, CKS1B, POLE, POLA2, ESPL1, POLQ, NDC80, TROAP, STMN1, KIF11, DTYMK, CCNF, PLK1, TMPO, KIF4A, NEK2, KPNA2, KIF15, NSD2, TRAIP, HMGA1, H2AX, CENPF, KNL1, PTTG1, CKS2, MARCKS, STIL, PRIM2, TFDP1, PBK, RAD21, EWSR1, CHMP1A, TRA2B, PLK4, SLC7A1, NOLC1, SMC4, SMC1A, EZH2, E2F2, UPF1, ODF2, CENPA, BARD1, RBM14, TLE3, SUV39H1, CCNB2, SFPQ</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td><a href="EnrichmentPlots/HALLMARK_COMPLEMENT.svg" target="_blank">HALLMARK_COMPLEMENT</a></td>
+      <td>0.703998</td>
+      <td>1.668742</td>
+      <td>0.002481</td>
+      <td>0.037898</td>
+      <td>0.054</td>
+      <td>24/149</td>
+      <td>4.99%</td>
+      <td>CFB, CXCL1, C3, TNFAIP3, C1R, C1S, IL6, DPP4, IRF1, PIM1, CTSS, C2, CLU, IRF2, LGALS3, FN1, F3, LRP1, ME1, MMP14, CTSO, DOCK4, PCSK9, C9</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td><a href="EnrichmentPlots/HALLMARK_TNFA_SIGNALING_VIA_NFKB.svg" target="_blank">HALLMARK_TNFA_SIGNALING_VIA_NFKB</a></td>
+      <td>0.679037</td>
+      <td>1.667998</td>
+      <td>0.000000</td>
+      <td>0.025265</td>
+      <td>0.054</td>
+      <td>46/177</td>
+      <td>4.71%</td>
+      <td>TNFAIP6, SOD2, CXCL1, CXCL6, CXCL2, TNFAIP3, CXCL3, TNFAIP2, CCL2, NAMPT, RELB, ZC3H12A, NFKBIA, BCL3, ICAM1, SQSTM1, PNRC1, IFIH1, MSC, DRAM1, IL6, BIRC3, IRF1, SPSB1, TLR2, MAP3K8, GCH1, IFIT2, TNFRSF9, BTG1, IL15RA, G0S2, KLF4, F3, NFKB2, NFE2L2, PTX3, CSF1, JUNB, NFIL3, REL, CFLAR, GFPT2, SAT1, TNFAIP8, NFAT5</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td><a href="EnrichmentPlots/HALLMARK_MITOTIC_SPINDLE.svg" target="_blank">HALLMARK_MITOTIC_SPINDLE</a></td>
+      <td>-0.673089</td>
+      <td>-1.666985</td>
+      <td>0.000000</td>
+      <td>0.003174</td>
+      <td>0.012</td>
+      <td>63/195</td>
+      <td>11.50%</td>
+      <td>NEDD9, MYH10, ACTN4, CDK1, PLEKHG2, PDLIM5, ANLN, AURKA, MYH9, FSCN1, KIF23, LMNB1, BIRC5, TOP2A, KIF2C, BUB1, FLNB, TPX2, PRC1, BCAR1, CDC42EP1, MAP1S, EZR, FLNA, RACGAP1, TTK, VCL, CENPE, KIF22, ARHGDIA, MYO1E, RASAL2, INCENP, NUSAP1, ESPL1, NDC80, DLGAP5, KIF11, KNTC1, PLK1, SORBS2, KIF4A, NEK2, MAPRE1, KIF15, CENPF, SYNPO, PALLD, MARCKS, RABGAP1, ITSN1, DYNLL2, SMC4, MYO9B, SMC1A, FGD4, CDC42EP2, KLC1, RHOF, SHROOM2, CAPZB, CEP72, CCNB2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td><a href="EnrichmentPlots/HALLMARK_MYC_TARGETS_V1.svg" target="_blank">HALLMARK_MYC_TARGETS_V1</a></td>
+      <td>-0.667886</td>
+      <td>-1.642311</td>
+      <td>0.000000</td>
+      <td>0.003174</td>
+      <td>0.016</td>
+      <td>61/195</td>
+      <td>18.16%</td>
+      <td>CDK2, PGK1, MCM5, MCM2, CDC45, SSB, CCNA2, MCM7, LDHA, CDC20, MAD2L1, TYMS, MCM6, MCM4, CTPS1, KPNA2, RANBP1, TFDP1, TRA2B, RRM1, PSMD8, SNRPA1, NOLC1, SRSF7, HNRNPR, SNRPD3, PSMA7, PPM1G, CSTF2, RUVBL2, SRSF3, HNRNPA2B1, H2AZ1, SNRPA, CCT5, PHB1, NHP2, CCT7, RNPS1, PCNA, DEK, PRPF31, PA2G4, UBE2L3, RFC4, SRSF2, PSMD3, VDAC1, RAD23B, SNRPD1, HPRT1, ETF1, GSPT1, SNRPD2, RRP9, EIF4G2, SF3A1, NME1, XRCC6, SRSF1, EIF2S1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td><a href="EnrichmentPlots/HALLMARK_INFLAMMATORY_RESPONSE.svg" target="_blank">HALLMARK_INFLAMMATORY_RESPONSE</a></td>
+      <td>0.685226</td>
+      <td>1.632347</td>
+      <td>0.000000</td>
+      <td>0.032759</td>
+      <td>0.090</td>
+      <td>30/135</td>
+      <td>4.02%</td>
+      <td>TNFAIP6, CXCL6, CCL2, NAMPT, CXCL8, NFKBIA, ICAM1, IRAK2, IL6, IRF1, TLR2, TNFSF10, IL18R1, GCH1, HAS2, TNFRSF9, IL15RA, IL1R1, TLR3, P2RX7, CALCRL, F3, NMI, SLC11A2, TNFSF15, MMP14, CSF1, CCL7, TLR1, TAPBP</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td><a href="EnrichmentPlots/HALLMARK_INTERFERON_ALPHA_RESPONSE.svg" target="_blank">HALLMARK_INTERFERON_ALPHA_RESPONSE</a></td>
+      <td>0.720130</td>
+      <td>1.617700</td>
+      <td>0.009302</td>
+      <td>0.032631</td>
+      <td>0.114</td>
+      <td>31/91</td>
+      <td>8.07%</td>
+      <td>C1S, IFI44L, IFIH1, EPSTI1, GBP2, IRF1, PARP14, IFIT2, PARP9, NCOA7, IRF2, TENT5A, NMI, IFI44, HERC6, MX1, DDX60, TMEM140, SAMD9L, CD47, CSF1, B2M, GBP4, SAMD9, SLC25A28, CMPK2, TAP1, IFIT3, RTP4, PROCR, IFI35</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td><a href="EnrichmentPlots/HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY.svg" target="_blank">HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY</a></td>
+      <td>0.768211</td>
+      <td>1.591904</td>
+      <td>0.007634</td>
+      <td>0.034686</td>
+      <td>0.137</td>
+      <td>8/46</td>
+      <td>3.37%</td>
+      <td>SOD2, MGST1, GCLM, SRXN1, GCLC, ABCC1, TXN, JUNB</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td><a href="EnrichmentPlots/HALLMARK_MYOGENESIS.svg" target="_blank">HALLMARK_MYOGENESIS</a></td>
+      <td>-0.668542</td>
+      <td>-1.573768</td>
+      <td>0.001684</td>
+      <td>0.010475</td>
+      <td>0.064</td>
+      <td>33/154</td>
+      <td>6.15%</td>
+      <td>ACTC1, CRYAB, CKB, SORBS1, TAGLN, SPHK1, MRAS, FHL1, TPD52L1, PYGM, TPM2, MYO1C, MYOM1, MYH9, REEP1, MYOZ1, GADD45B, TGFB1, TNNT1, PDLIM7, PPP1R3C, ITGA7, DMPK, HDAC5, TNNT2, ERBB3, SMTN, CNN3, MYH2, DES, PC, TPM3, SPEG</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td><a href="EnrichmentPlots/HALLMARK_ALLOGRAFT_REJECTION.svg" target="_blank">HALLMARK_ALLOGRAFT_REJECTION</a></td>
+      <td>0.670489</td>
+      <td>1.561434</td>
+      <td>0.007212</td>
+      <td>0.041293</td>
+      <td>0.191</td>
+      <td>23/118</td>
+      <td>6.62%</td>
+      <td>CCL2, BCL3, ICAM1, IL16, GBP2, IL6, TLR2, CTSS, C2, IFNGR1, TLR3, BCAT1, CD47, CSF1, B2M, CCL7, TLR1, TAPBP, CCL11, IFNAR2, CCND2, STAT1, TAP1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td><a href="EnrichmentPlots/HALLMARK_BILE_ACID_METABOLISM.svg" target="_blank">HALLMARK_BILE_ACID_METABOLISM</a></td>
+      <td>0.690117</td>
+      <td>1.538613</td>
+      <td>0.017500</td>
+      <td>0.045445</td>
+      <td>0.242</td>
+      <td>15/82</td>
+      <td>6.47%</td>
+      <td>CH25H, ABCA9, ABCA6, CYP7B1, OPTN, GCLM, IDH1, EFHC1, ACSL1, ABCA8, IDI1, ALDH9A1, ABCA5, CROT, FDXR</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td><a href="EnrichmentPlots/HALLMARK_TGF_BETA_SIGNALING.svg" target="_blank">HALLMARK_TGF_BETA_SIGNALING</a></td>
+      <td>-0.720120</td>
+      <td>-1.507843</td>
+      <td>0.020183</td>
+      <td>0.027378</td>
+      <td>0.182</td>
+      <td>12/52</td>
+      <td>9.17%</td>
+      <td>ID3, ID1, NOG, THBS1, TGFB1, SMAD6, SLC20A1, SERPINE1, ENG, BCAR3, TGIF1, SMAD7</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td><a href="EnrichmentPlots/HALLMARK_XENOBIOTIC_METABOLISM.svg" target="_blank">HALLMARK_XENOBIOTIC_METABOLISM</a></td>
+      <td>0.624823</td>
+      <td>1.488897</td>
+      <td>0.011933</td>
+      <td>0.068230</td>
+      <td>0.357</td>
+      <td>32/151</td>
+      <td>6.07%</td>
+      <td>CFB, AKR1C2, AKR1C3, HSD11B1, ALDH3A1, SLC6A6, ADH1C, MAN1A1, PTGR1, TPST1, GCH1, CES1, PGD, IL1R1, GCLC, PDK4, ABCC3, ESR1, BCAT1, IDH1, FMO1, ABCC2, FMO3, UGDH, SLC22A1, CYFIP2, ITIH4, SLC46A3, GSR, ALDH9A1, CROT, FBLN1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td><a href="EnrichmentPlots/HALLMARK_COAGULATION.svg" target="_blank">HALLMARK_COAGULATION</a></td>
+      <td>0.639160</td>
+      <td>1.487315</td>
+      <td>0.021480</td>
+      <td>0.062821</td>
+      <td>0.362</td>
+      <td>15/97</td>
+      <td>3.20%</td>
+      <td>CFB, C3, C1R, C1S, MMP2, DPP4, F2RL2, C2, CLU, CTSK, FN1, F3, LRP1, FBN1, MMP14</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td><a href="EnrichmentPlots/HALLMARK_NOTCH_SIGNALING.svg" target="_blank">HALLMARK_NOTCH_SIGNALING</a></td>
+      <td>-0.744491</td>
+      <td>-1.451589</td>
+      <td>0.031196</td>
+      <td>0.048294</td>
+      <td>0.340</td>
+      <td>6/30</td>
+      <td>4.28%</td>
+      <td>HEYL, FZD5, NOTCH3, FZD1, LFNG, CCND1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td><a href="EnrichmentPlots/HALLMARK_SPERMATOGENESIS.svg" target="_blank">HALLMARK_SPERMATOGENESIS</a></td>
+      <td>-0.649459</td>
+      <td>-1.436951</td>
+      <td>0.025501</td>
+      <td>0.050491</td>
+      <td>0.396</td>
+      <td>17/78</td>
+      <td>12.96%</td>
+      <td>CDK1, HSPA2, AURKA, SHE, KIF2C, BUB1, NCAPH, TTK, CLVS1, NEK2, ARL4A, NEFH, EZH2, CCNB2, JAM3, NF2, CDKN3</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td><a href="EnrichmentPlots/HALLMARK_IL6_JAK_STAT3_SIGNALING.svg" target="_blank">HALLMARK_IL6_JAK_STAT3_SIGNALING</a></td>
+      <td>0.643928</td>
+      <td>1.411795</td>
+      <td>0.057831</td>
+      <td>0.108613</td>
+      <td>0.552</td>
+      <td>16/64</td>
+      <td>3.60%</td>
+      <td>CXCL1, CXCL3, IL6, IRF1, TLR2, MAP3K8, IL18R1, PIM1, TNFRSF21, IFNGR1, IL15RA, IL1R1, PDGFC, ITGA4, CSF1, CCL7</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td><a href="EnrichmentPlots/HALLMARK_APICAL_JUNCTION.svg" target="_blank">HALLMARK_APICAL_JUNCTION</a></td>
+      <td>-0.583258</td>
+      <td>-1.397023</td>
+      <td>0.012259</td>
+      <td>0.069481</td>
+      <td>0.529</td>
+      <td>37/162</td>
+      <td>7.53%</td>
+      <td>ACTC1, MYH10, MYL9, ITGA3, ACTN4, ACTN1, ACTB, NFASC, FLNC, ZYX, ACTG1, MYH9, FSCN1, CNN2, CD274, YWHAH, ACTG2, VCL, VASP, CTNNA1, MYL12B, TUBG1, SLC30A3, PFN1, CAP1, SDC3, NEXN, LAYN, SPEG, ATP1A3, LIMA1, CDH6, GNAI2, LDLRAP1, PECAM1, MSN, NECTIN2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td><a href="EnrichmentPlots/HALLMARK_HEME_METABOLISM.svg" target="_blank">HALLMARK_HEME_METABOLISM</a></td>
+      <td>0.564793</td>
+      <td>1.361647</td>
+      <td>0.042755</td>
+      <td>0.138959</td>
+      <td>0.671</td>
+      <td>25/162</td>
+      <td>6.71%</td>
+      <td>C3, SLC7A11, OPTN, GCLM, BACH1, ALDH1L1, GCLC, CLIC2, SLC11A2, MXI1, CCDC28A, TCEA1, ACKR1, LMO2, BPGM, EPB41, ABCB6, ERMAP, AGPAT4, SDCBP, SPTA1, SLC6A9, TFRC, FOXO3, CROCCP2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td><a href="EnrichmentPlots/HALLMARK_ANGIOGENESIS.svg" target="_blank">HALLMARK_ANGIOGENESIS</a></td>
+      <td>0.707928</td>
+      <td>1.356158</td>
+      <td>0.110609</td>
+      <td>0.134100</td>
+      <td>0.690</td>
+      <td>9/31</td>
+      <td>6.31%</td>
+      <td>CXCL6, POSTN, TNFRSF21, LUM, S100A4, JAG1, CCND2, VCAN, ITGAV</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td><a href="EnrichmentPlots/HALLMARK_PI3K_AKT_MTOR_SIGNALING.svg" target="_blank">HALLMARK_PI3K_AKT_MTOR_SIGNALING</a></td>
+      <td>-0.604982</td>
+      <td>-1.354097</td>
+      <td>0.043860</td>
+      <td>0.099514</td>
+      <td>0.699</td>
+      <td>23/89</td>
+      <td>13.28%</td>
+      <td>VAV3, MAP2K3, CDK1, CDK2, SLC2A1, PITX2, CFL1, ARHGDIA, E2F1, CALR, PFN1, AP2M1, UBE2N, AKT1, ARF1, PIN1, ACTR2, MYD88, PLCB1, PLCG1, RAF1, PDK1, GRK2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td><a href="EnrichmentPlots/HALLMARK_ESTROGEN_RESPONSE_LATE.svg" target="_blank">HALLMARK_ESTROGEN_RESPONSE_LATE</a></td>
+      <td>-0.558481</td>
+      <td>-1.347730</td>
+      <td>0.031987</td>
+      <td>0.096455</td>
+      <td>0.714</td>
+      <td>34/161</td>
+      <td>7.82%</td>
+      <td>NMU, CKB, ISG20, FGFR3, TPD52L1, KRT19, IGFBP4, GINS2, IDH2, TOP2A, CDC6, FLNB, CLIC3, FOS, RNASEH2A, NAB2, SLC29A1, ST6GALNAC2, SEMA3B, CDC20, EGR3, CCND1, SLC7A5, XRCC3, EMP2, KIF20A, CA2, PTGES, MYOF, PAPSS2, GALE, NBL1, STIL, PKP3</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td><a href="EnrichmentPlots/HALLMARK_MYC_TARGETS_V2.svg" target="_blank">HALLMARK_MYC_TARGETS_V2</a></td>
+      <td>-0.638498</td>
+      <td>-1.347049</td>
+      <td>0.070299</td>
+      <td>0.089012</td>
+      <td>0.718</td>
+      <td>18/58</td>
+      <td>16.98%</td>
+      <td>MCM5, HK2, MCM4, PLK1, TMEM97, DCTPP1, RRP12, PLK4, NOLC1, PPRC1, NOC4L, FARSA, SLC29A2, PHB1, PA2G4, IMP4, DUSP2, RRP9</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td><a href="EnrichmentPlots/HALLMARK_GLYCOLYSIS.svg" target="_blank">HALLMARK_GLYCOLYSIS</a></td>
+      <td>-0.544916</td>
+      <td>-1.331834</td>
+      <td>0.034884</td>
+      <td>0.094801</td>
+      <td>0.761</td>
+      <td>39/175</td>
+      <td>8.59%</td>
+      <td>PRPS1, ISG20, CDK1, GPC4, PGK1, AURKA, MET, GYS1, SDC2, SLC16A3, ADORA2B, HK2, HMMR, DEPDC1, PFKP, LDHA, TPI1, EGLN3, ENO1, PGAM1, SDC1, ANGPTL4, STMN1, CLN6, SDC3, KIF20A, PC, CHPF, CITED2, AK4, STC1, EXT1, GALE, B4GALT2, ALDOA, MIF, GMPPB, PAM, PPFIA4</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td><a href="EnrichmentPlots/HALLMARK_UV_RESPONSE_UP.svg" target="_blank">HALLMARK_UV_RESPONSE_UP</a></td>
+      <td>0.558071</td>
+      <td>1.325332</td>
+      <td>0.088372</td>
+      <td>0.154161</td>
+      <td>0.764</td>
+      <td>14/139</td>
+      <td>3.37%</td>
+      <td>SOD2, CXCL2, NFKBIA, ICAM1, SQSTM1, IL6, IRF1, CDKN2B, GCH1, BTG1, BCL2L11, FMO1, MMP14, JUNB</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td><a href="EnrichmentPlots/HALLMARK_KRAS_SIGNALING_UP.svg" target="_blank">HALLMARK_KRAS_SIGNALING_UP</a></td>
+      <td>0.539440</td>
+      <td>1.297183</td>
+      <td>0.072562</td>
+      <td>0.171718</td>
+      <td>0.824</td>
+      <td>28/154</td>
+      <td>6.09%</td>
+      <td>CFB, TNFAIP3, HSD11B1, BIRC3, GPRC5B, MAFB, ADAM17, GPNMB, CTSS, SATB1, PRDM1, G0S2, KLF4, TMEM100, SERPINA3, ZNF277, VWA5A, APOD, TSPAN7, GFPT2, BPGM, SPARCL1, MMD, SDCCAG8, CCND2, CROT, LY96, ADGRA2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td><a href="EnrichmentPlots/HALLMARK_ESTROGEN_RESPONSE_EARLY.svg" target="_blank">HALLMARK_ESTROGEN_RESPONSE_EARLY</a></td>
+      <td>-0.540024</td>
+      <td>-1.291211</td>
+      <td>0.061017</td>
+      <td>0.127198</td>
+      <td>0.884</td>
+      <td>35/170</td>
+      <td>8.31%</td>
+      <td>KRT18, TGM2, OLFML3, ENDOD1, FHL2, TPD52L1, SYT12, KRT19, KAZN, REEP1, IGFBP4, FCMR, RHOBTB3, FLNB, SLC2A1, KRT8, CLIC3, FOS, THSD4, SEMA3B, MYBL1, EGR3, CCND1, SLC7A5, DLC1, TIPARP, PTGES, DHRS3, MYOF, SYNGR1, PAPSS2, NBL1, SLC1A1, IGF1R, RRP12</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td><a href="EnrichmentPlots/HALLMARK_CHOLESTEROL_HOMEOSTASIS.svg" target="_blank">HALLMARK_CHOLESTEROL_HOMEOSTASIS</a></td>
+      <td>0.578943</td>
+      <td>1.264171</td>
+      <td>0.144186</td>
+      <td>0.195833</td>
+      <td>0.875</td>
+      <td>20/70</td>
+      <td>8.64%</td>
+      <td>PNRC1, HMGCS1, TP53INP1, LSS, CLU, LGALS3, HMGCR, FDFT1, SCD, DHCR7, SC5D, CYP51A1, NFIL3, JAG1, IDI1, STARD4, PPARG, ACAT2, SQLE, PDK3</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td><a href="EnrichmentPlots/HALLMARK_PEROXISOME.svg" target="_blank">HALLMARK_PEROXISOME</a></td>
+      <td>0.558162</td>
+      <td>1.257712</td>
+      <td>0.142145</td>
+      <td>0.190207</td>
+      <td>0.882</td>
+      <td>7/85</td>
+      <td>5.98%</td>
+      <td>SOD2, SEMA3C, IDH1, PEX2, ACSL1, IDI1, ALDH9A1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td><a href="EnrichmentPlots/HALLMARK_APOPTOSIS.svg" target="_blank">HALLMARK_APOPTOSIS</a></td>
+      <td>0.508883</td>
+      <td>1.219090</td>
+      <td>0.116945</td>
+      <td>0.226888</td>
+      <td>0.938</td>
+      <td>21/139</td>
+      <td>3.17%</td>
+      <td>SOD2, CDC25B, SQSTM1, TGFBR3, MMP2, IL6, BIRC3, IRF1, TNFSF10, GCH1, SATB1, CLU, LUM, DCN, IFNGR1, DPYD, LGALS3, HGF, CYLD, BCL2L11, SC5D</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td><a href="EnrichmentPlots/HALLMARK_DNA_REPAIR.svg" target="_blank">HALLMARK_DNA_REPAIR</a></td>
+      <td>-0.510864</td>
+      <td>-1.206819</td>
+      <td>0.145833</td>
+      <td>0.227490</td>
+      <td>0.980</td>
+      <td>35/143</td>
+      <td>16.14%</td>
+      <td>PDE4B, FEN1, ZWINT, ADCY6, LIG1, TYMS, POLA2, RAD51, RFC2, USP11, ERCC2, NME4, GUK1, PNP, RFC3, POLR2F, RFC5, BCAP31, POLA1, MPC2, AAAS, PRIM1, ALYREF, CANT1, PCNA, POLD3, NELFB, DAD1, ITPA, TAF10, ADRM1, TAF13, RFC4, POLR2C, HPRT1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td><a href="EnrichmentPlots/HALLMARK_P53_PATHWAY.svg" target="_blank">HALLMARK_P53_PATHWAY</a></td>
+      <td>0.484662</td>
+      <td>1.200778</td>
+      <td>0.119904</td>
+      <td>0.238138</td>
+      <td>0.953</td>
+      <td>41/181</td>
+      <td>11.24%</td>
+      <td>SLC7A11, DRAM1, CDKN2B, ZFP36L1, MDM2, BTG1, COQ8A, CCNG1, S100A10, KLF4, VDR, ZMAT3, CLCA2, HSPA4L, VWA5A, ADA, S100A4, SAT1, OSGIN1, CYFIP2, TP53, CCND2, FOXO3, FDXR, TAP1, ABHD4, CDH13, SP1, SESN1, PIDD1, PROCR, RAP2B, ISCU, ANKRA2, RPS27L, TRIB3, LIF, EPHX1, MKNK2, FUCA1, SLC19A2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td><a href="EnrichmentPlots/HALLMARK_PROTEIN_SECRETION.svg" target="_blank">HALLMARK_PROTEIN_SECRETION</a></td>
+      <td>-0.525676</td>
+      <td>-1.186659</td>
+      <td>0.188679</td>
+      <td>0.245758</td>
+      <td>0.990</td>
+      <td>7/92</td>
+      <td>9.00%</td>
+      <td>KRT18, SGMS1, AP2M1, PAM, YKT6, BNIP3, ARF1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>HALLMARK_HYPOXIA</td>
+      <td>-0.458302</td>
+      <td>-1.104069</td>
+      <td>0.246689</td>
+      <td>0.376805</td>
+      <td>0.999</td>
+      <td>47/175</td>
+      <td>8.59%</td>
+      <td>DUSP1, TGM2, CCN2, CCN1, ISG20, PYGM, GPC4, PGK1, PGM1, MYH9, CAVIN1, PFKFB3, GYS1, SDC2, ADORA2B, SLC2A1, HK2, FOS, PPP1R3C, PFKP, LDHA, TPI1, PFKL, KLF6, ADM, ENO1, SERPINE1, ANGPTL4, PGF, SDC3, AKAP12, CHST3, TIPARP, NDRG1, GAPDH, CITED2, AK4, GPI, STC1, EXT1, ALDOA, JMJD6, MIF, PLAUR, FOSL2, PAM, PPFIA4</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>HALLMARK_PANCREAS_BETA_CELLS</td>
+      <td>0.613473</td>
+      <td>1.089155</td>
+      <td>0.375276</td>
+      <td>0.398827</td>
+      <td>0.996</td>
+      <td>4/18</td>
+      <td>4.66%</td>
+      <td>DPP4, MAFB, VDR, LMO2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>HALLMARK_UV_RESPONSE_DN</td>
+      <td>-0.444396</td>
+      <td>-1.073320</td>
+      <td>0.317949</td>
+      <td>0.417990</td>
+      <td>0.999</td>
+      <td>27/142</td>
+      <td>9.41%</td>
+      <td>DUSP1, CCN1, DDAH1, FHL2, ID1, PDLIM5, KIT, BDNF, RGS4, MET, SDC2, MGLL, ADORA2B, SIPA1L1, EFEMP1, FBLN5, DLC1, SERPINE1, CAP2, CITED2, PDGFRB, IGF1R, ERBB2, SLC7A1, ZMIZ1, SMAD7, IRS1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION</td>
+      <td>0.425664</td>
+      <td>1.059984</td>
+      <td>0.328431</td>
+      <td>0.431834</td>
+      <td>0.998</td>
+      <td>27/192</td>
+      <td>3.76%</td>
+      <td>CXCL1, CXCL6, TNFAIP3, CXCL8, IL32, TGFBR3, MMP2, COL6A3, CXCL12, IL6, POSTN, FAP, ANPEP, LUM, DCN, COL7A1, SERPINE2, FN1, DAB2, LRP1, ECM2, PTX3, FBN1, MMP14, TGFBI, ABI3BP, DST</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>HALLMARK_OXIDATIVE_PHOSPHORYLATION</td>
+      <td>-0.418565</td>
+      <td>-1.027118</td>
+      <td>0.385666</td>
+      <td>0.493976</td>
+      <td>1.000</td>
+      <td>46/187</td>
+      <td>21.87%</td>
+      <td>SLC25A4, IDH2, LDHA, ATP1B1, CYB5R3, GPI, OGDH, CPT1A, POLR2F, COX5B, SLC25A11, SLC25A20, ATP6V0C, NDUFA1, NDUFB2, COX7A2, HCCS, UQCRC1, ACO2, TIMM10, PMPCA, VDAC1, ACADVL, ATP5F1E, ATP6V1E1, NDUFA3, RHOT2, COX8A, ECHS1, ATP6V0E1, MFN2, GRPEL1, PDHA1, ACAA1, ATP5MG, ATP6V0B, MRPS11, MRPS12, COX6B1, ATP5MC1, UQCR11, TIMM17A, TIMM50, ATP5ME, MAOB, ATP6V1F</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>HALLMARK_ADIPOGENESIS</td>
+      <td>0.422097</td>
+      <td>1.023961</td>
+      <td>0.391521</td>
+      <td>0.479826</td>
+      <td>0.998</td>
+      <td>19/186</td>
+      <td>5.47%</td>
+      <td>C3, ENPP2, CMBL, IFNGR1, GBE1, OMD, ITIH5, DHCR7, NABP1, IDH1, TKT, ME1, LIFR, CCNG2, SQOR, LPCAT3, SPARCL1, COL15A1, PLIN2</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>HALLMARK_ANDROGEN_RESPONSE</td>
+      <td>-0.455596</td>
+      <td>-1.017988</td>
+      <td>0.431694</td>
+      <td>0.488402</td>
+      <td>1.000</td>
+      <td>21/92</td>
+      <td>8.93%</td>
+      <td>SPCS3, ACTN1, PDLIM5, KRT19, ANKH, MYL12A, KRT8, SRF, CCND3, CCND1, PTK2B, ALDH1A3, CENPN, TSC22D1, AKAP12, NDRG1, TMEM50A, ARID5B, RRP12, AKT1, ZMIZ1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>HALLMARK_HEDGEHOG_SIGNALING</td>
+      <td>0.494917</td>
+      <td>1.010471</td>
+      <td>0.444965</td>
+      <td>0.485719</td>
+      <td>1.000</td>
+      <td>8/32</td>
+      <td>7.41%</td>
+      <td>NRCAM, CELSR1, PTCH1, HEY1, GLI1, L1CAM, AMOT, OPHN1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>HALLMARK_FATTY_ACID_METABOLISM</td>
+      <td>0.404966</td>
+      <td>1.005568</td>
+      <td>0.419204</td>
+      <td>0.475008</td>
+      <td>1.000</td>
+      <td>17/140</td>
+      <td>6.00%</td>
+      <td>HMGCS1, ALDH3A1, ADH1C, ALDH3A2, CBR3, S100A10, G0S2, ACSM3, IDH1, ME1, FMO1, UGDH, AUH, ACSL1, IDI1, ALDH9A1, BMPR1B</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>HALLMARK_IL2_STAT5_SIGNALING</td>
+      <td>0.405477</td>
+      <td>0.981147</td>
+      <td>0.467470</td>
+      <td>0.502153</td>
+      <td>1.000</td>
+      <td>23/163</td>
+      <td>6.96%</td>
+      <td>SLC39A8, NFKBIZ, MAP3K8, TNFSF10, IL18R1, PIM1, F2RL2, TNFRSF21, TNFRSF9, IFNGR1, HIPK2, ITIH5, PTCH1, CSF1, NFIL3, GBP4, WLS, PLIN2, CCND2, IGF2R, ITGAV, IL1R2, RRAGD</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>HALLMARK_MTORC1_SIGNALING</td>
+      <td>0.391262</td>
+      <td>0.966942</td>
+      <td>0.477218</td>
+      <td>0.511251</td>
+      <td>1.000</td>
+      <td>27/195</td>
+      <td>6.47%</td>
+      <td>NAMPT, SQSTM1, INSIG1, SLC7A11, HMGCS1, SLC6A6, ADD3, GBE1, CCNG1, GCLC, HMGCR, SCD, DHCR7, BCAT1, IDH1, ME1, MTHFD2L, SC5D, CYP51A1, NFIL3, TCEA1, PPA1, GSR, IDI1, TFRC, STARD4, FDXR</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>HALLMARK_APICAL_SURFACE</td>
+      <td>-0.483374</td>
+      <td>-0.939216</td>
+      <td>0.555746</td>
+      <td>0.632247</td>
+      <td>1.000</td>
+      <td>6/31</td>
+      <td>7.98%</td>
+      <td>GAS1, HSPB1, MDGA1, ATP8B1, BRCA1, PLAUR</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>HALLMARK_WNT_BETA_CATENIN_SIGNALING</td>
+      <td>-0.464988</td>
+      <td>-0.934614</td>
+      <td>0.575868</td>
+      <td>0.613681</td>
+      <td>1.000</td>
+      <td>7/38</td>
+      <td>5.44%</td>
+      <td>SKP2, NKD1, FZD1, WNT5B, HDAC5, FZD8, DKK1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>HALLMARK_UNFOLDED_PROTEIN_RESPONSE</td>
+      <td>-0.387013</td>
+      <td>-0.886679</td>
+      <td>0.677249</td>
+      <td>0.691336</td>
+      <td>1.000</td>
+      <td>15/107</td>
+      <td>8.96%</td>
+      <td>SPCS3, SLC7A5, CALR, CKS1B, FUS, TUBB2A, NFYB, BANF1, H2AX, BAG3, EXOSC9, YIF1A, LSM4, WFS1, NOLC1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>HALLMARK_KRAS_SIGNALING_DN</td>
+      <td>0.379674</td>
+      <td>0.879808</td>
+      <td>0.657216</td>
+      <td>0.678070</td>
+      <td>1.000</td>
+      <td>7/101</td>
+      <td>2.66%</td>
+      <td>PTGFR, AKR1B10, IFI44L, CLSTN3, COQ8A, TG, MX1</td>
+      <td>h.all.v2023.2.Hs.symbols.gmt</td>
+    </tr>
+  </tbody>
+</table>
+                                </section>
+                            </div>
+                        </body>
+                        </html>
+                        
