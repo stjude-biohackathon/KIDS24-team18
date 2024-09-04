@@ -4,6 +4,7 @@ import logging
 import inspect
 from random import choice
 from math import ceil
+from pathlib import Path
 
 def id_generator(size=7, chars=string.ascii_uppercase + string.digits):
     """
@@ -67,8 +68,8 @@ def load_template(protocol, folder="templates"):
     str
         The content of the loaded template file.
     """
-    file_name = f"{protocol}.txt"
-    file_path = os.path.join(folder, file_name)
+    
+    file_path = os.path.join(os.path.dirname(Path( __file__ ).absolute()), "..", "..", folder, f"{protocol}.txt")
     
     with open(file_path, 'r') as file:
         content = file.read()

@@ -123,7 +123,7 @@ def parseArgs():
     apiParams = parser.add_argument_group("Optional GPT-4 API parameters")
     apiParams.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
     apiParams.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai'])
-    apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api'])
+    apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'gpt-4o-mini'])
 
     params = vars(parser.parse_args())
 
@@ -151,10 +151,13 @@ def parseArgs():
                 params["reportType"] = "gsealist"
     
     if params["reportType"] == "std":
+        classicSTDrepDir = False
         for subdir in ["Stats", "Peaks"]:
             if not os.path.exists(os.path.join(params["inputDirectory"], subdir)):
-                lgr.error("The input directory '{}' should have '{}' subdirectory, which does not exist. Program was aborted.".format(params["inputDirectory"], subdir))
-                errors = True
+                lgr.info("The classic STDreport '{}' should have '{}' subdirectory, to be analyzed as 'classicSTDrepDir', assumin input file is the directory with *report file from Automapper.".format(params["inputDirectory"], subdir))
+            else:
+                classicSTDrepDir = True
+    
     
     elif params["reportType"] == "gseareport":
         if not os.path.exists(os.path.join(params["inputDirectory"], "gseapy.gene_set.prerank.report.filtered.csv")):
@@ -332,18 +335,34 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
 
     ### Process the metafile as a pandas DataFrame and evaluate duplication rates
     df = pd.read_csv(metaFile, sep="\t")
-    df["Duplication Rate(%)"] = df["Duplication Rate(%)"].str.replace("%", "").astype(float)
-    highDuplicationSamples = df[df["Duplication Rate(%)"] > 30].shape[0]
-    if highDuplicationSamples > 0:
-        highDupNote = f"Additional Note: There are {highDuplicationSamples} samples with duplication rates higher than 30%."
-        QC_table += f"\n\n{highDupNote}\n"
+    dupColName = "ignore"
+    for col in ["DUPLICATION (%)", "Duplication Rate(%)"]:
+        if col in df.columns:
+            dupColName = col
+    if dupColName != "ignore":
+        try:
+            df[dupColName] = df[dupColName].str.replace("%", "").astype(float)
+        except AttributeError:
+            pass
+        highDuplicationSamples = df[df[dupColName] > 30].shape[0]
+        if highDuplicationSamples > 0:
+            highDupNote = f"Additional Note: There are {highDuplicationSamples} samples with duplication rates higher than 30%."
+            QC_table += f"\n\n{highDupNote}\n"
 
     ### Evaluate mapping rates and append notes if applicable
-    df["Mapping Rate(%)"] = df["Mapping Rate(%)"].str.replace("%", "").astype(float)
-    lowMappingSamples = df[df["Mapping Rate(%)"] < 80].shape[0]
-    if lowMappingSamples > 0:
-        lowMapNote = f"Additional Note: There are {lowMappingSamples} samples with mapping rates lower than 80%."
-        QC_table += f"\n\n{lowMapNote}\n"
+    mapColName = "ignore"
+    for col in ["Mapping Rate(%)", "MAPPED (%)"]:
+        if col in df.columns:
+            mapColName = col
+    if mapColName != "ignore":
+        try:
+            df[mapColName] = df[mapColName].str.replace("%", "").astype(float)
+        except AttributeError:
+            pass
+        lowMappingSamples = df[df[mapColName] < 80].shape[0]
+        if lowMappingSamples > 0:
+            lowMapNote = f"Additional Note: There are {lowMappingSamples} samples with mapping rates lower than 80%."
+            QC_table += f"\n\n{lowMapNote}\n"
 
     ### Connect to Grumpy AI and generate the reports
     grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
@@ -452,7 +471,7 @@ def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, ma
     else:
         ### Direct connection with the OpenAI API using private key - use with caution!
         client = OpenAI(api_key=APIKEY)
-
+    
     maxTok = min([max_tokens, getMaxTokenPerModel(gptModel)]) ### In case of "Object of type int64 is not JSON serializable" refer to here: https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable
 
     ### Call Grumpy for his assesment of the data QC
@@ -473,14 +492,6 @@ def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, ma
         outfile.close()
     else:
         try:
-            # print("#!#!#gptModel: ", gptModel)  # DEBUG
-            # print("#!#!#message_text: ", message_text)  # DEBUG
-            # print("#!#!#temperature: ", temperature)  # DEBUG
-            # print("#!#!#requestedCompletionTokens: ", requestedCompletionTokens)  # DEBUG
-            # print("#!#!#top_p: ", top_p)  # DEBUG
-            # print("#!#!#frequency_penalty: ", frequency_penalty)  # DEBUG
-            # print("#!#!#presence_penalty: ", presence_penalty)  # DEBUG
-            # print("#!#!#stop: ", None)  # DEBUG
             completion = client.chat.completions.create(
                                                           model=gptModel,
                                                           messages = message_text,
