@@ -48,7 +48,7 @@ if showLoadingTimes:
     start = datetime.now()
     import base64
     print(f"Loading: `import base64` took {datetime.now()-start}")
-    
+
     start = datetime.now()
     from math import ceil
     print(f"Loading: `from math import ceil` took {datetime.now()-start}")
@@ -100,11 +100,11 @@ def parseArgs():
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
     lgr.info("Current working directory: {}".format(os.getcwd()))
     lgr.info("Command used to run the program: python {}".format(' '.join(str(x) for x in argv)))
-    
+
     parser = argparse.ArgumentParser()
     requiredParams = parser.add_argument_group("Required parameters")
     requiredParams.add_argument("-p", "--protocol", help="What protocol is to be considered? Currently for the standard reports, the 'cutrun' and 'chip' are supported. For the GSEA, the 'gsea', which stands is supported, which will search for the 'gseapy.gene_set.prerank.report.filtered.csv' file in the directory specified in '-i' flag (for classic prerank-GSEApy run), or will analyze the txt file with a list of enriched pathways, if such txt is provided to the '-i' flag instead of the directory to the GSEApy results folder.", action="store", type=str, required=True, dest="protocol", choices = ['cutrun', 'chip', 'gsea'])
-    
+
     optionalParams = parser.add_argument_group("Optional parameters")
     optionalParams.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file (for GSEA paths). By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
     optionalParams.add_argument("-o", "--outputDirectory", help="The output directory where the results of the GrumPy's evaluation will be stored. By default='./'.", default='./', action="store", type=str, required=False, dest="outputDirectory")
@@ -117,19 +117,19 @@ def parseArgs():
 
     apiParams = parser.add_argument_group("Optional GPT-4 API parameters")
     apiParams.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
-    apiParams.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai'])
-    apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api'])
+    apiParams.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
+    apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2'])
 
     params = vars(parser.parse_args())
 
     lgr.info("Protocol (--protocol flag): {}".format(params["protocol"]))
-    
+
     errors = False
     if not os.path.exists(params["inputDirectory"]):
         lgr.error("The input directory '{}' does not exist. Program was aborted.".format(params["inputDirectory"]))
         errors = True
     lgr.info("Input directory (--inputDirectory flag): {}".format(params["inputDirectory"]))
-    
+
     if not os.path.exists(params["outputDirectory"]):
         lgr.error("The output directory '{}' does not exist. Program was aborted.".format(params["outputDirectory"]))
         errors = True
@@ -144,23 +144,23 @@ def parseArgs():
                 params["reportType"] = "gseareport"
             else:
                 params["reportType"] = "gsealist"
-    
+
     if params["reportType"] == "std":
         for subdir in ["Stats", "Peaks"]:
             if not os.path.exists(os.path.join(params["inputDirectory"], subdir)):
                 lgr.error("The input directory '{}' should have '{}' subdirectory, which does not exist. Program was aborted.".format(params["inputDirectory"], subdir))
                 errors = True
-    
+
     elif params["reportType"] == "gseareport":
         if not os.path.exists(os.path.join(params["inputDirectory"], "gseapy.gene_set.prerank.report.filtered.csv")):
             lgr.error("The input directory '{}' should have 'gseapy.gene_set.prerank.report.filtered.csv' file, which does not exist. Program was aborted.".format(params["inputDirectory"]))
             errors = True
-    
+
     elif params["reportType"] == "gsealist":
         if not os.path.exists(params["inputDirectory"]):
             lgr.error("The input file with the list of pathways to be checked'{}' does not exist. Program was aborted.".format(params["inputDirectory"]))
             errors = True
-    
+
     lgr.info("Report type (--reportType flag): {}".format(params["reportType"]))
 
     if params["reportType"] == "decode":
@@ -185,7 +185,7 @@ def parseArgs():
         lgr.info("Loading additional libreries needed for the Grumpy evaluation, please wait...")
         if showLoadingTimes:
             start = datetime.datetime.now()
-            
+
             import tiktoken
             lgr.info("Loaded: `import tiktoken` took %s", datetime.datetime.now()-start)
 
@@ -218,13 +218,13 @@ def parseArgs():
             import numpy as np
 
     lgr.info("Force calculating evaluation (--force flag): {}".format(params["force"]))
-    
+
     params["keyFilePresent"] = True
     if not os.path.exists(params["apikey"]):
         lgr.error("The API-KEY file '{}' does not exist. Program was aborted.".format(params["apikey"]))
         params["keyFilePresent"] = False
     # lgr.info("API-KEY file (--apikey flag): {}".format(params["apikey"]))
-    
+
     # check if context is a file or a string:
     if os.path.exists(params["context"]):
         with open(params["context"], 'r') as file:
@@ -237,7 +237,7 @@ def parseArgs():
     lgr.info("Hidden output files (--hidden flag): {}".format(params["hidden"]))
 
     lgr.info("Species (--species flag): {}".format(params["species"]))
-    
+
     if errors:
         lgr.critical("Errors found while parsing parameters -- see more details above. Program was aborted.")
         raise Exception("Errors found while parsing parameters")
@@ -245,11 +245,11 @@ def parseArgs():
     return params
 
 
-def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
+def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName,
                   outfileNameShort, hidden=False):
     """
-    Function to call the Grumpy AI for generating a standard report based on a metafile. 
-    The function handles renaming of old assessments, setting up the role for Grumpy, 
+    Function to call the Grumpy AI for generating a standard report based on a metafile.
+    The function handles renaming of old assessments, setting up the role for Grumpy,
     processing QC tables, and finally generating both detailed and concise assessment reports.
 
     Parameters:
@@ -282,18 +282,18 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
     # Initialize logger for this function
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
     lgr.info("Calling the Grumpy for the standard report metafile '{}'.".format(metaFile))
-    
+
     ### Renaming old assessments if they already exist
     if os.path.exists(outfileName):
         movedOutfileName = f"{outfileName}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileName)).strftime('%Y%m%d')}.{id_generator()}.txt"
         os.rename(outfileName, movedOutfileName)
         lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileName, movedOutfileName)
-    
+
     if os.path.exists(outfileNameShort):
         movedOutfileName = f"{outfileNameShort}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileNameShort)).strftime('%Y%m%d')}.{id_generator()}.txt"
         os.rename(outfileNameShort, movedOutfileName)
         lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileNameShort, movedOutfileName)
-    
+
     ### Define descriptions for the basic role for Grumpy based on the protocol
     if protocol == "cutrun":
         basicRole = load_template("cutrun")
@@ -313,7 +313,7 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
     """
 
     grumpyRoleShorter = f"""
-    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words). 
+    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words).
     Moreover, please be as critique, as skeptical and as realistic as possible, I want you to be able to provide focus on the low-quality aspects of the data for the human recipient of your message. If you don't find any issues with the data, don't make them up, instead just please write that it all rather looks good etc.
 
     Finally, when you mention the actual sample names, always put two vertical bars (i.e. "||") before and after the name, e.g. ||123451_H3K27Ac_rep1||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
@@ -422,7 +422,7 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
 
 def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=28000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
-    
+
     if hidden == False:
         ### saving the prompt:
         promptFile = f"{outfileName}.prompt.txt"
@@ -444,17 +444,20 @@ def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, ma
             api_key = APIKEY,
             azure_endpoint = "https://oa-northcentral-dev.openai.azure.com/"  # Your Azure OpenAI resource's endpoint value.
         )
+    elif apiType == "ollama":
+        ### Direct connection with the OpenAI API using private key - use with caution!
+        client = OpenAI(api_key='ollama', base_url = 'http://localhost:11434/v1')
+        maxTok = max_tokens
     else:
         ### Direct connection with the OpenAI API using private key - use with caution!
-        client = OpenAI(api_key=APIKEY)
-
-    maxTok = min([max_tokens, getMaxTokenPerModel(gptModel)]) ### In case of "Object of type int64 is not JSON serializable" refer to here: https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable
+        client = OpenAI(api_key=APIKEY, base_url = "https://api.openai.com/v1")
+        maxTok = min([max_tokens, getMaxTokenPerModel(gptModel)]) ### In case of "Object of type int64 is not JSON serializable" refer to here: https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable
 
     ### Call Grumpy for his assesment of the data QC
     # Grumpy - full assesment
     message_text = [{"role":"system","content":grumpyRole},
                     {"role":"user","content":query}]
-    
+
     # Initialize the tokenizer
     tokenizer = tiktoken.get_encoding("cl100k_base")
     total_tokens = sum(len(tokenizer.encode(message['content'])) for message in message_text)
@@ -515,10 +518,10 @@ def callGrumpyGSEA_sanityCheck(referencePathwaysList, grumpyEvaluationFile, patt
     for match in matches:
         if match not in referencePathwaysList:
             mismatchedPathways.append(match)
-    
+
     if len(mismatchedPathways) > 0:
         lgr.warning(f"The following pathways were mentioned in the Grumpy evaluation, but were not present in the reference list: {mismatchedPathways}")
-    
+
     # Remove all "||" from the text
     cleaned_text = grumpyEvaluation.replace('||', '')
 
@@ -531,7 +534,7 @@ def callGrumpyGSEA_sanityCheck(referencePathwaysList, grumpyEvaluationFile, patt
             file.write(f"The following pathways were mentioned in the Grumpy evaluation, but were not present in the reference list: {mismatchedPathways}\n")
         else:
             file.write("All pathways mentioned in the Grumpy evaluation were present in the reference list.\n")
-    
+
 def callGrumpyGSEA_reporter(referencePathwaysList, species, grumpyEvaluationFile_precise, grumpyEvaluationFile_balanced, grumpyEvaluationFile_creative, outfileName, grumpyRole, pathwaysList, contextDescription, outfileNamePrefix, pattern=r'\|\|([^|]+)\|\|'):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
     scriptsDir = os.path.dirname(os.path.realpath(__file__))
@@ -555,7 +558,7 @@ def callGrumpyGSEA_reporter(referencePathwaysList, species, grumpyEvaluationFile
                 if pathway not in externalSignatureLinks:
                     externalSignatureLinks[pathway] = link
     lgr.info(f"External '{species}' signature links were loaded for {len(externalSignatureLinks)} pathways.")
-    
+
     ### Read in the Grumpy evaluation file(s)
     processedEvals = {}
 
@@ -575,21 +578,21 @@ def callGrumpyGSEA_reporter(referencePathwaysList, species, grumpyEvaluationFile
 
         if len(set(mismatchedPathways)) > 0:
             lgr.warning(f"The following pathways were mentioned in the Grumpy evaluation, but were not present in the reference list: {mismatchedPathways}")
-        
+
         for foundSignature in matches:
-            
+
             if foundSignature in referencePathwaysList:
                 icon = checkIcon
             else:
                 icon = warningIcon
-            
+
             if foundSignature in externalSignatureLinks:
                 linkFront = f"<a href='{externalSignatureLinks[foundSignature]}' target='_blank'>"
                 linkBack = "</a>"
             else:
                 linkFront = ""
                 linkBack = ""
-            
+
             grumpyEvaluation = grumpyEvaluation.replace(f"||{foundSignature}||", f"{linkFront}{foundSignature} {icon}{linkBack}")
 
         grumpyEvaluation += f"""
@@ -652,12 +655,12 @@ def callGrumpyGSEA_reporter(referencePathwaysList, species, grumpyEvaluationFile
     write_html_file(outfileName, formatted_html)
 
     lgr.info(f"The Grumpy report was saved to the file '{outfileName}'.")
-    
+
 
 def callGrumpyGSEA(reportType, protocol, inputDirectory, force, keyFile, apiType, gptModel, context, outfileNamePrefix, hidden, species, topPaths=250, FDRcut=0.05, pValCut=0.05, max_tokens=32000):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
     lgr.info("Calling the Grumpy for the GSEA mode directory or pathways list: '{}'.".format(inputDirectory))
-    
+
     ### Renaming the old assesments (if applicable)
     outfileName_precise = f"{outfileNamePrefix}.precise.md"
     outfileName_balanced = f"{outfileNamePrefix}.balanced.md"
@@ -671,11 +674,11 @@ def callGrumpyGSEA(reportType, protocol, inputDirectory, force, keyFile, apiType
     #             movedOutfileName = f"{outFile}.{datetime.datetime.fromtimestamp(os.path.getctime(outFile)).strftime('%Y%m%d')}.{id_generator()}.md"
     #         os.rename(outFile, movedOutfileName)
     #         lgr.info("The output file '{}' already existed, so it was renamed to '{}'.".format(outFile, movedOutfileName))
-    
-    
-    
+
+
+
     # if os.path.exists(outfileName):
-    #     ### Extract the creation date of the existing file, and embed into new file name with format: YYYYMMDD 
+    #     ### Extract the creation date of the existing file, and embed into new file name with format: YYYYMMDD
     #     # movedOutfileName = f"{outfileName}.{id_generator()}.txt"
     #     movedOutfileName = f"{outfileName}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileName)).strftime('%Y%m%d')}.{id_generator()}.txt"
     #     os.rename(outfileName, movedOutfileName)
@@ -685,7 +688,7 @@ def callGrumpyGSEA(reportType, protocol, inputDirectory, force, keyFile, apiType
     #     movedOutfileName = f"{outfileNameShort}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileNameShort)).strftime('%Y%m%d')}.{id_generator()}.txt"
     #     os.rename(outfileNameShort, movedOutfileName)
     #     lgr.info("The output file '{}' already existed, so it was renamed to '{}'.".format(outfileNameShort, movedOutfileName))
-    
+
     ### Define the basic role for the Grumpy:
     basicRole = """
 
@@ -703,7 +706,7 @@ def callGrumpyGSEA(reportType, protocol, inputDirectory, force, keyFile, apiType
         if os.path.isfile(os.path.join(inputDirectory, "gseapy.gene_set.prerank.report.filtered.csv")):
             pathwaysDf = pd.read_csv(os.path.join(inputDirectory, "gseapy.gene_set.prerank.report.filtered.csv"))
             referencePathwaysList = list(pathwaysDf["Term"])
-            
+
             signUpPaths = pathwaysDf[(pathwaysDf["FDR q-val"] < FDRcut) & (pathwaysDf["NOM p-val"] < pValCut) & (pathwaysDf["NES"] > 0)]
             signUpPaths.sort_values(by="NES", inplace=True, ascending=False)
             upPathways = list(signUpPaths.head(topPaths)["Term"])
@@ -715,7 +718,7 @@ def callGrumpyGSEA(reportType, protocol, inputDirectory, force, keyFile, apiType
             downPathways = list(signDownPaths.head(topPaths)["Term"])
             if len(downPathways) == 0:
                 downPathways = ["No significant downregulated pathways were found."]
-            
+
             pathwaysList = f"""
 Found {len(signUpPaths)} of significantly upregulated pathways. Top {np.min([topPaths, len(signUpPaths)])} are:
 {upPathways}
@@ -734,8 +737,8 @@ Found {len(signDownPaths)} of significantly downregulated pathways. Top {np.min(
         ```
         {context}
         ```"""
-    
-    
+
+
     basicRole = f"""
 In this task, you are focusing on the list of gene signatures / gene sets / pathways, coming from the Gene Set Enrichment Analysis (GSEA). Your goal is to analyze all those pathways presented to you, and to highlight the most relevant ones, emphasizing why do you think they are relevant.
 Moreover, please be as critique, as skeptical and as realistic as possible, dont make things up. If you find some potentially interesting patterns, mention them. If you find something that is worht further exploring, mention that as well. If something doesnt make sense, e.g. you identify contradictory results of some sort, please feel free to mention that as well. But if you dont find anything interesting, just say that you dont find anything interesting and that is much better than making things up.
@@ -763,19 +766,19 @@ You are an AI assistant that acts as the Computational Biology expert in the are
     ## Please be concise in your evaluation.
 
     ### Running the Grumpy in the Precise mode:
-    grumpyConnect(keyFile, apiType, gptModel, grumpyRole, pathwaysList, outfileName_precise, 
+    grumpyConnect(keyFile, apiType, gptModel, grumpyRole, pathwaysList, outfileName_precise,
                   max_tokens=max_tokens, hidden=hidden, temperature=0.1, top_p=0.6)
 
     ### Running the Grumpy in the Balanced mode:
-    grumpyConnect(keyFile, apiType, gptModel, grumpyRole, pathwaysList, outfileName_balanced, 
+    grumpyConnect(keyFile, apiType, gptModel, grumpyRole, pathwaysList, outfileName_balanced,
                   max_tokens=max_tokens, hidden=hidden, temperature=0.5, top_p=0.8)
-    
+
     ### Running the Grumpy in the Creative mode:
     grumpyConnect(keyFile, apiType, gptModel, grumpyRole, pathwaysList, outfileName_creative,
                    max_tokens=max_tokens, hidden=hidden, temperature=0.85, top_p=0.9)
 
     ### Compiling the final report:
-    callGrumpyGSEA_reporter(referencePathwaysList, species, outfileName_precise, outfileName_balanced, 
+    callGrumpyGSEA_reporter(referencePathwaysList, species, outfileName_precise, outfileName_balanced,
                             outfileName_creative, outfileName_report, grumpyRole, pathwaysList, context, outfileNamePrefix)
 
 __version__ = "0.3.0-alpha"
@@ -808,7 +811,7 @@ def main():
         outfile = open(outfileNameShort, "w")
         outfile.write("API key file was not provided or not accessible, GrumPy's evaluation cannot be performed.")
         outfile.close()
-    
+
     lgr.info("All done, thank you!")
 
 
