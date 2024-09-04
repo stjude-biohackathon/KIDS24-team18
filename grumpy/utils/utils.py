@@ -75,64 +75,6 @@ def load_template(protocol, folder="templates"):
     
     return content
 
-def load_html_template(file_path):
-    """
-    Reads the content of an HTML template file and returns it as a string.
-
-    Parameters:
-    -----------
-    file_path : str
-        The path to the HTML template file.
-
-    Returns:
-    --------
-    str
-        The content of the HTML file as a string.
-    """
-    with open(file_path, 'r') as file:
-        html_content = file.read()
-    return html_content
-
-def format_html(html_content, processed_evals):
-    """
-    Replaces placeholders in the HTML content with corresponding values from the processed_evals dictionary.
-
-    Parameters:
-    -----------
-    html_content : str
-        The HTML content with placeholders.
-    processed_evals : dict
-        A dictionary where the keys correspond to placeholder names in the HTML content,
-        and the values are the strings that will replace the placeholders.
-
-    Returns:
-    --------
-    str
-        The modified HTML content with placeholders replaced by the corresponding values.
-    """
-    for key, value in processed_evals.items():
-        placeholder = f"{{{key}}}"
-        html_content = html_content.replace(placeholder, value)
-    return html_content
-
-def write_html_file(file_path, content):
-    """
-    Writes the modified HTML content to a file.
-
-    Parameters:
-    -----------
-    file_path : str
-        The path to the file where the modified HTML content will be saved.
-    content : str
-        The modified HTML content to be written to the file.
-
-    Returns:
-    --------
-    None
-    """
-    with open(file_path, 'w') as file:
-        file.write(content)
-
 def str2bool(v):
     """
     Convert a string representation of a boolean value to its corresponding boolean value.
