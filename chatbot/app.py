@@ -13,8 +13,40 @@ st.set_page_config(
     }
 )
 
+# col1, col2 = st.columns([1, 2])
+st.sidebar.image("templates/Grumpy_logo_250x250.png", caption="Grumpy")
 st.title("Grumpy")
 st.write("Grumpy (Generative Research Utility Model in Python) is a tool designed to conduct Biological Context Analysis (BCA). It utilizes Large Language Models (LLMs) such as OpenAI's GPT-4 (St. Jude Dedicated Instance) or other models like Llama from Meta.")
+
+@st.cache_data
+def sidebar_links():
+    database_link_dict = {
+        "GitHub Page": "https://github.com/uab-cgds-worthey/DITTO4NF",
+        "RCSB Protein Data Bank": "https://www.rcsb.org",
+    }
+
+    st.sidebar.markdown("## Database-Related Links")
+    for link_text, link_url in database_link_dict.items():
+        st.sidebar.markdown(f"[{link_text}]({link_url})")
+
+    software_link_dict = {
+        "3Dmol": "https://3dmol.csb.pitt.edu",
+        "Pandas": "https://pandas.pydata.org",
+        "SHAP": "https://shap.readthedocs.io/en/latest/index.html",
+        "Matplotlib": "https://matplotlib.org",
+        "Streamlit": "https://streamlit.io",
+    }
+
+    st.sidebar.markdown("## Software-Related Links")
+    link_1_col, link_2_col, link_3_col = st.sidebar.columns(3)
+    i = 0
+    link_col_dict = {0: link_1_col, 1: link_2_col, 2: link_3_col}
+    for link_text, link_url in software_link_dict.items():
+        st_col = link_col_dict[i]
+        i += 1
+        if i == len(link_col_dict.keys()):
+            i = 0
+        st_col.markdown(f"[{link_text}]({link_url})")
 
 @st.cache_data
 def init_summary(uploaded_file):
@@ -40,8 +72,10 @@ def init_summary(uploaded_file):
 
 model = st.sidebar.selectbox(
     "Select your model?",
-    ("llama3", "gpt-4o", "gpt-4o-mini", "meditron"),
+    ("llama3.1", "gpt-4o", "gpt-4o-mini", "meditron"),
 )
+
+sidebar_links()
 
 if model in ["gpt-4o", "gpt-4o-mini"]:
     password = st.sidebar.text_input("Paste you OpenAI API key here: ", "sk-xxxxxxx", type = "password")

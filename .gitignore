@@ -173,5 +173,4 @@ grumpy_env/
 *.creative.md
 *.evaluation.html
 .DS_Store
-*.png
 *.svg
