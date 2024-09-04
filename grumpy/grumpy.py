@@ -46,6 +46,10 @@ if showLoadingTimes:
     print(f"Loading: `import zlib` took {datetime.now()-start}")
 
     start = datetime.now()
+    from jinja2 import Template
+    print(f"Loading: `import zlib` took {datetime.now()-start}")
+
+    start = datetime.now()
     import base64
     print(f"Loading: `import base64` took {datetime.now()-start}")
     
@@ -88,7 +92,7 @@ else:
     import base64
 
     from math import ceil
-
+    from jinja2 import Template
     from utils.logger import CustomFormatter
     from utils.html_processing import extract_section, decodeHTML
     from utils.utils import id_generator, load_template, str2bool, write_html_file, format_html, load_html_template
@@ -638,6 +642,7 @@ def callGrumpyGSEA_reporter(referencePathwaysList, species, grumpyEvaluationFile
     base_html = load_html_template(html_template_path)
 
     # Format the HTML with the processedEvals values
+    #formatted_html = format_html(base_html, processedEvals)
     formatted_html = format_html(base_html, processedEvals)
 
     # Write the formatted HTML to the output file
