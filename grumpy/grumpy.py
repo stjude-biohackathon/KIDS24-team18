@@ -46,10 +46,6 @@ if showLoadingTimes:
     print(f"Loading: `import zlib` took {datetime.now()-start}")
 
     start = datetime.now()
-    from jinja2 import Template
-    print(f"Loading: `import zlib` took {datetime.now()-start}")
-
-    start = datetime.now()
     import base64
     print(f"Loading: `import base64` took {datetime.now()-start}")
     
@@ -59,8 +55,8 @@ if showLoadingTimes:
 
     start = datetime.now()
     from utils.logger import CustomFormatter
-    from utils.html_processing import extract_section, decodeHTML
-    from utils.utils import id_generator, load_template, str2bool, caesar_cipher, write_html_file, format_html, load_html_template
+    from utils.html_processing import extract_section, decodeHTML, format_html, convert_md_to_html
+    from utils.utils import id_generator, load_template, str2bool, caesar_cipher, write_html_file, load_html_template
     from utils.tokenization import getMaxTokenPerModel
     from utils.compression import compress_text, decompress_text
     from utils.peak_analysis import determinePkCalling, getPeakNumber
@@ -92,10 +88,9 @@ else:
     import base64
 
     from math import ceil
-    from jinja2 import Template
     from utils.logger import CustomFormatter
-    from utils.html_processing import extract_section, decodeHTML
-    from utils.utils import id_generator, load_template, str2bool, write_html_file, format_html, load_html_template
+    from utils.html_processing import extract_section, decodeHTML, format_html, convert_md_to_html
+    from utils.utils import id_generator, load_template, str2bool, write_html_file, load_html_template
     from utils.tokenization import getMaxTokenPerModel
     from utils.compression import compress_text, decompress_text
     from utils.peak_analysis import determinePkCalling, getPeakNumber
@@ -641,9 +636,22 @@ def callGrumpyGSEA_reporter(referencePathwaysList, species, grumpyEvaluationFile
     # Load the base HTML template
     base_html = load_html_template(html_template_path)
 
+    # Convert markdown content to HTML
+    processedEvals['precise'] = convert_md_to_html(processedEvals['precise'])
+    processedEvals['balanced'] = convert_md_to_html(processedEvals['balanced'])
+    processedEvals['creative'] = convert_md_to_html(processedEvals['creative'])
+
+    # Other data to replace in the template
+    replacements = {
+    "context_description": contextDescription,
+    "outfile_name_prefix": outfileNamePrefix,
+    "version": __version__,
+    "processedEvals": processedEvals  # Pass processedEvals as part of the dictionary
+    }
+
     # Format the HTML with the processedEvals values
-    #formatted_html = format_html(base_html, processedEvals)
-    formatted_html = format_html(base_html, processedEvals)
+    formatted_html = format_html(html_content=base_html,
+                                 replacements=replacements)
 
     # Write the formatted HTML to the output file
     write_html_file(outfileName, formatted_html)

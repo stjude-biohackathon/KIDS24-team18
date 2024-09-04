@@ -2,6 +2,8 @@ import logging
 import re
 import os
 from utils.compression import compress_text, decompress_text
+from jinja2 import Template
+import markdown
 
 def extract_section(file_path, flankPattern):
     """
@@ -87,17 +89,10 @@ def format_html(html_content, replacements):
     str
         The modified HTML content with placeholders replaced by the corresponding values.
     """
-    for key, value in replacements.items():
-        # For dictionary keys like processedEvals["creative"], manually format the key
-        if isinstance(value, dict):
-            for subkey, subvalue in value.items():
-                placeholder = f'{{{{ processedEvals["{subkey}"] }}}}'
-                html_content = html_content.replace(placeholder, subvalue)
-        else:
-            placeholder = f'{{{{ {key} }}}}'  # Replacing {{ key }} with value
-            html_content = html_content.replace(placeholder, value)
-    
-    return html_content
+    # Create a Jinja2 Template object
+    template = Template(html_content)
+    # Render the template with the provided data
+    return template.render(replacements)
 
 def write_html_file(file_path, content):
     """
@@ -134,3 +129,19 @@ def load_html_template(file_path):
     with open(file_path, 'r') as file:
         html_content = file.read()
     return html_content
+
+def convert_md_to_html(markdown_content):
+    """
+    Converts a markdown string to HTML.
+
+    Parameters:
+    -----------
+    markdown_content : str
+        The markdown content to be converted to HTML.
+
+    Returns:
+    --------
+    str
+        The HTML representation of the markdown content.
+    """
+    return markdown.markdown(markdown_content)
