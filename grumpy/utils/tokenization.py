@@ -28,3 +28,6 @@ def getMaxTokenPerModel(gptModel):
         return 16000 # actual value is 16,385
     elif gptModel == "gpt-4o" or gptModel == "gpt4o-api":
         return 127000 # actual value is 128,000
+    else:
+        return 30000 # default value
+    

@@ -40,45 +40,65 @@ def parseStandardRepDir(reportDir, protocol, outfilesPrefix, force, outputDirect
     else:
         outfileName = os.path.join(outputDirectory, f"{outfilesPrefix}.meta.tsv")
 
+    ### Check if the file with "*.report" (e.g. CABDEV-GSE247821-ATACSEQ.2024-08-28_22-13-12.report) exists, if yes parse it because the summary of mapping is already present, if not, parse the StatsAll.dat files becasue we need to assume its standard QC report directory. if more than one report file is found, merge them together:
+    
     if os.path.exists(outfileName) and not force:
         lgr.info("The output file '{}' already exists and the force parameter was set to False, so the program will re-use the preexisting file.".format(outfileName))
     else:
-        ### Merge the content of all the *.StatsAll.dat files in Stats subdirectory:
-        statFiles = []
-        for file in glob.glob(os.path.join(reportDir, "Stats", "*.StatsAll.dat")): 
-            statFiles.append(file)
+        if len(glob.glob(os.path.join(reportDir, "*.report"))) == 0:
+            ### Merge the content of all the *.StatsAll.dat files in Stats subdirectory:
+            statFiles = []
+            for file in glob.glob(os.path.join(reportDir, "Stats", "*.StatsAll.dat")): 
+                statFiles.append(file)
 
-        # Read each TSV file into a DataFrame
-        dataframes = [pd.read_csv(file, sep='\t') for file in statFiles]
+            # Read each TSV file into a DataFrame
+            dataframes = [pd.read_csv(file, sep='\t') for file in statFiles]
 
-        # Concatenate all DataFrames into one
-        combined_df = pd.concat(dataframes)
+            # Concatenate all DataFrames into one
+            combined_df = pd.concat(dataframes)
 
-        # Sort the DataFrame by the 'Sample' column
-        sorted_df = combined_df.sort_values(by='Sample')
+            # Sort the DataFrame by the 'Sample' column
+            sorted_df = combined_df.sort_values(by='Sample')
 
-        # Remove columns that are completely empty
-        statsDf = sorted_df.dropna(axis=1, how='all')
+            # Remove columns that are completely empty
+            statsDf = sorted_df.dropna(axis=1, how='all')
 
-        ### Cleaning of the content of the table to get the most relevant protocol-related information included for Grumpy:
-        if protocol == "cutrun":
-            statsDf = statsDf[["Sample", "Reads", "NonDupMapped", "Mpd%", "Dup%", "Final_Fragments", "<2kb"]].copy()
-            statsDf.rename(columns={"Sample": "Sample", "Reads": "Total(M)", "NonDupMapped": "Unique Reads(M)", "Mpd%": "Mapping Rate(%)", "Dup%": "Duplication Rate(%)", "Final_Fragments": "Final Fragments(M)", "<2kb": "<2kb(M)"}, inplace=True)
-        elif protocol == "chip":
-            statsDf = statsDf[["Sample", "Reads", "NonDupMapped", "Mpd%", "Dup%", "FinalRead", "FragmentSize", "Qtag", "RSC"]].copy()
-            statsDf.rename(columns={"Sample": "Sample", "Reads": "Total(M)", "NonDupMapped": "Unique Reads(M)", "Mpd%": "Mapping Rate(%)", "Dup%": "Duplication Rate(%)", "FinalRead": "Final Reads(M)", "FragmentSize": "Fragment Size(bp)", "Qtag": "Qtag", "RSC": "RSC"}, inplace=True)
+            ### Cleaning of the content of the table to get the most relevant protocol-related information included for Grumpy:
+            if protocol == "cutrun":
+                statsDf = statsDf[["Sample", "Reads", "NonDupMapped", "Mpd%", "Dup%", "Final_Fragments", "<2kb"]].copy()
+                statsDf.rename(columns={"Sample": "Sample", "Reads": "Total(M)", "NonDupMapped": "Unique Reads(M)", "Mpd%": "Mapping Rate(%)", "Dup%": "Duplication Rate(%)", "Final_Fragments": "Final Fragments(M)", "<2kb": "<2kb(M)"}, inplace=True)
+            elif protocol == "chip":
+                statsDf = statsDf[["Sample", "Reads", "NonDupMapped", "Mpd%", "Dup%", "FinalRead", "FragmentSize", "Qtag", "RSC"]].copy()
+                statsDf.rename(columns={"Sample": "Sample", "Reads": "Total(M)", "NonDupMapped": "Unique Reads(M)", "Mpd%": "Mapping Rate(%)", "Dup%": "Duplication Rate(%)", "FinalRead": "Final Reads(M)", "FragmentSize": "Fragment Size(bp)", "Qtag": "Qtag", "RSC": "RSC"}, inplace=True)
+            else:
+                lgr.critical("The protocol '{}' is not recognized. Program was aborted.".format(protocol))
+                exit()
+            
+            ### Scan the "Peaks" subdirectory to identify the number of filered peaks (not FDR50) for each sample, while determining also the type of peaks (broad peaks come from sicer, and narrow peaks come from macs2). Also, the noC_peaks are called without control, while the ones without prefix are called with control, but here we dont care which one.
+            statsDf["pkCalling"] = statsDf["Sample"].apply(lambda x: determinePkCalling(reportDir, x))
+            statsDf["PeaksControl"] = statsDf["Sample"].apply(lambda x: getPeakNumber(reportDir, x))
+            statsDf["PeaksNoControl"] = statsDf["Sample"].apply(lambda x: getPeakNumber(reportDir, x, nocPrefix="noC_"))
+
         else:
-            lgr.critical("The protocol '{}' is not recognized. Program was aborted.".format(protocol))
-            exit()
-        
-        ### Scan the "Peaks" subdirectory to identify the number of filered peaks (not FDR50) for each sample, while determining also the type of peaks (broad peaks come from sicer, and narrow peaks come from macs2). Also, the noC_peaks are called without control, while the ones without prefix are called with control, but here we dont care which one.
-        statsDf["pkCalling"] = statsDf["Sample"].apply(lambda x: determinePkCalling(reportDir, x))
-        statsDf["PeaksControl"] = statsDf["Sample"].apply(lambda x: getPeakNumber(reportDir, x))
-        statsDf["PeaksNoControl"] = statsDf["Sample"].apply(lambda x: getPeakNumber(reportDir, x, nocPrefix="noC_"))
 
+            statsDf = []
+            for file in glob.glob(os.path.join(reportDir, "*.report")):
+                df = pd.read_csv(file, sep='|', skiprows=2)
+                df.columns = df.columns.str.strip()
+                df = df.dropna(axis=1, how='all')
+                df.iloc[:, 0] = df.iloc[:, 0].astype(str)
+                df = df[~df.iloc[:, 0].str.contains('-')]
+                statsDf.append(df.copy())
+            if len(glob.glob(os.path.join(reportDir, "*.report"))) > 1:
+                statsDf = pd.concat(statsDf)
+                lgr.info("More than one report file was found in the report directory. The program will merge them together.")
+            else:
+                statsDf = statsDf[0]
+        
         ### Save the DataFrame to a TSV file
         statsDf.to_csv(outfileName, sep='\t', index=False)
 
         lgr.info("Successfully parsed the report directory with information for {} samples.".format(len(statsDf)))
+    
 
     return outfileName

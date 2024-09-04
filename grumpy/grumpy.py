@@ -118,7 +118,7 @@ def parseArgs():
     apiParams = parser.add_argument_group("Optional GPT-4 API parameters")
     apiParams.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
     apiParams.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
-    apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2'])
+    apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
 
     params = vars(parser.parse_args())
 
@@ -148,8 +148,8 @@ def parseArgs():
     if params["reportType"] == "std":
         for subdir in ["Stats", "Peaks"]:
             if not os.path.exists(os.path.join(params["inputDirectory"], subdir)):
-                lgr.error("The input directory '{}' should have '{}' subdirectory, which does not exist. Program was aborted.".format(params["inputDirectory"], subdir))
-                errors = True
+                lgr.info("The classic STDreport '{}' should have '{}' subdirectory, to be analyzed as 'classicSTDrepDir', assumin input file is the directory with *report file from Automapper.".format(params["inputDirectory"], subdir))
+
 
     elif params["reportType"] == "gseareport":
         if not os.path.exists(os.path.join(params["inputDirectory"], "gseapy.gene_set.prerank.report.filtered.csv")):
@@ -245,11 +245,11 @@ def parseArgs():
     return params
 
 
-def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName,
+def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
                   outfileNameShort, hidden=False):
     """
-    Function to call the Grumpy AI for generating a standard report based on a metafile.
-    The function handles renaming of old assessments, setting up the role for Grumpy,
+    Function to call the Grumpy AI for generating a standard report based on a metafile. 
+    The function handles renaming of old assessments, setting up the role for Grumpy, 
     processing QC tables, and finally generating both detailed and concise assessment reports.
 
     Parameters:
@@ -282,18 +282,18 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
     # Initialize logger for this function
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
     lgr.info("Calling the Grumpy for the standard report metafile '{}'.".format(metaFile))
-
+    
     ### Renaming old assessments if they already exist
     if os.path.exists(outfileName):
         movedOutfileName = f"{outfileName}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileName)).strftime('%Y%m%d')}.{id_generator()}.txt"
         os.rename(outfileName, movedOutfileName)
         lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileName, movedOutfileName)
-
+    
     if os.path.exists(outfileNameShort):
         movedOutfileName = f"{outfileNameShort}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileNameShort)).strftime('%Y%m%d')}.{id_generator()}.txt"
         os.rename(outfileNameShort, movedOutfileName)
         lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileNameShort, movedOutfileName)
-
+    
     ### Define descriptions for the basic role for Grumpy based on the protocol
     if protocol == "cutrun":
         basicRole = load_template("cutrun")
@@ -313,7 +313,7 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
     """
 
     grumpyRoleShorter = f"""
-    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words).
+    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words). 
     Moreover, please be as critique, as skeptical and as realistic as possible, I want you to be able to provide focus on the low-quality aspects of the data for the human recipient of your message. If you don't find any issues with the data, don't make them up, instead just please write that it all rather looks good etc.
 
     Finally, when you mention the actual sample names, always put two vertical bars (i.e. "||") before and after the name, e.g. ||123451_H3K27Ac_rep1||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
@@ -327,98 +327,38 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
 
     ### Process the metafile as a pandas DataFrame and evaluate duplication rates
     df = pd.read_csv(metaFile, sep="\t")
-    df["Duplication Rate(%)"] = df["Duplication Rate(%)"].str.replace("%", "").astype(float)
-    highDuplicationSamples = df[df["Duplication Rate(%)"] > 30].shape[0]
-    if highDuplicationSamples > 0:
-        highDupNote = f"Additional Note: There are {highDuplicationSamples} samples with duplication rates higher than 30%."
-        QC_table += f"\n\n{highDupNote}\n"
+    dupColName = "ignore"
+    for col in ["DUPLICATION (%)", "Duplication Rate(%)"]:
+        if col in df.columns:
+            dupColName = col
+    if dupColName != "ignore":
+        try:
+            df[dupColName] = df[dupColName].str.replace("%", "").astype(float)
+        except AttributeError:
+            pass
+        highDuplicationSamples = df[df[dupColName] > 30].shape[0]
+        if highDuplicationSamples > 0:
+            highDupNote = f"Additional Note: There are {highDuplicationSamples} samples with duplication rates higher than 30%."
+            QC_table += f"\n\n{highDupNote}\n"
 
     ### Evaluate mapping rates and append notes if applicable
-    df["Mapping Rate(%)"] = df["Mapping Rate(%)"].str.replace("%", "").astype(float)
-    lowMappingSamples = df[df["Mapping Rate(%)"] < 80].shape[0]
-    if lowMappingSamples > 0:
-        lowMapNote = f"Additional Note: There are {lowMappingSamples} samples with mapping rates lower than 80%."
-        QC_table += f"\n\n{lowMapNote}\n"
+    mapColName = "ignore"
+    for col in ["Mapping Rate(%)", "MAPPED (%)"]:
+        if col in df.columns:
+            mapColName = col
+    if mapColName != "ignore":
+        try:
+            df[mapColName] = df[mapColName].str.replace("%", "").astype(float)
+        except AttributeError:
+            pass
+        lowMappingSamples = df[df[mapColName] < 80].shape[0]
+        if lowMappingSamples > 0:
+            lowMapNote = f"Additional Note: There are {lowMappingSamples} samples with mapping rates lower than 80%."
+            QC_table += f"\n\n{lowMapNote}\n"
 
     ### Connect to Grumpy AI and generate the reports
     grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
     grumpyConnect(keyFile, apiType, gptModel, grumpyRoleShorter, QC_table, outfileNameShort)
-
-    ### Commented out: Original connection to Azure OpenAI and detailed completion code
-    # os.environ["OPENAI_API_KEY"] = ""
-    # os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
-    # os.environ["AZURE_OPENAI_ENDPOINT"] = "https://oa-northcentral-dev.openai.azure.com/"
-
-    # APIKEY = open(keyFile).readlines()[0].strip()
-
-    # client = AzureOpenAI(
-    #     api_version = "2023-07-01-preview",
-    #     api_key = APIKEY,
-    #     azure_endpoint = "https://oa-northcentral-dev.openai.azure.com/"  # Your Azure OpenAI resource's endpoint value.
-    # )
-
-    # ### Call Grumpy for his assessment of the data QC
-    # # Grumpy - full assessment
-    # message_text = [{"role":"system","content":grumpyRole},
-    #             {"role":"user","content":QC_table}]
-
-    # try:
-    #     completion = client.chat.completions.create(
-    #     model="GPT-4-32k-API",
-    #     messages = message_text,
-    #     temperature=0.1,
-    #     max_tokens=10000,
-    #     top_p=0.95,
-    #     frequency_penalty=0,
-    #     presence_penalty=1,
-    #     stop=None
-    #     )
-
-    #     outfile = open(outfileName, "w")
-    #     outfile.write(completion.choices[0].message.content)
-    #     outfile.close()
-    #     lgr.info("The full assessment was saved to the file '{}'.".format(outfileName))
-    # except openai.AuthenticationError as e:
-    #     lgr.error(f"Failed to authenticate with OpenAI API. Please check your API key and permissions. Error details: {e}")
-    #     outfile = open(outfileName, "w")
-    #     outfile.write("Failed to authenticate with OpenAI API. Please check your API key and permissions. Also, most likely the API key is expired.")
-    #     outfile.close()
-    # except Exception as e:
-    #     lgr.error(f"An unexpected error occurred: {e}")
-    #     outfile = open(outfileName, "w")
-    #     outfile.write("An unexpected error occurred while calling the OpenAI API.")
-    #     outfile.close()
-
-    # # Grumpy - short summary
-    # try:
-    #     message_text = [{"role":"system","content":grumpyRoleShorter},
-    #                 {"role":"user","content":QC_table}]
-
-    #     completion = client.chat.completions.create(
-    #     model="GPT-4-32k-API",
-    #     messages = message_text,
-    #     temperature=0.1,
-    #     max_tokens=10000,
-    #     top_p=0.95,
-    #     frequency_penalty=0,
-    #     presence_penalty=1,
-    #     stop=None
-    #     )
-
-    #     outfile = open(outfileNameShort, "w")
-    #     outfile.write(completion.choices[0].message.content)
-    #     outfile.close()
-    #     lgr.info("The concise assessment was saved to the file '{}'.".format(outfileNameShort))
-    # except openai.AuthenticationError as e:
-    #     lgr.error(f"Failed to authenticate with OpenAI API. Please check your API key and permissions. Error details: {e}")
-    #     outfile = open(outfileNameShort, "w")
-    #     outfile.write("Failed to authenticate with OpenAI API. Please check your API key and permissions. Also, most likely the API key is expired.")
-    #     outfile.close()
-    # except Exception as e:
-    #     lgr.error(f"An unexpected error occurred: {e}")
-    #     outfile = open(outfileNameShort, "w")
-    #     outfile.write("An unexpected error occurred while calling the OpenAI API.")
-    #     outfile.close()
 
 def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=28000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
