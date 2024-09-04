@@ -7,18 +7,27 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
+        'Report a bug': "https://github.com/stjude-biohackathon/KIDS24-team18/issues",
+        'About': "Grumpy (Generative Research Utility Model in Python) is a tool designed to conduct Biological Context Analysis (BCA). It utilizes Large Language Models (LLMs) such as OpenAI's GPT-4 (St. Jude Dedicated Instance) or other models like Llama from Meta."
     }
 )
 
 st.title("Grumpy")
 st.write("Grumpy (Generative Research Utility Model in Python) is a tool designed to conduct Biological Context Analysis (BCA). It utilizes Large Language Models (LLMs) such as OpenAI's GPT-4 (St. Jude Dedicated Instance) or other models like Llama from Meta.")
 
-client = OpenAI(api_key='ollama', base_url = 'http://localhost:11434/v1')
+model = st.sidebar.selectbox(
+    "Select your model?",
+    ("gpt-4o", "gpt-4o-mini", "llama3", "meditron"),
+)
 
-st.session_state["openai_model"] = 'llama3'
+if model in ["gpt-4o", "gpt-4o-mini"]:
+    password = st.sidebar.text_input("Paste you OpenAI API key here: ", "sk-xxxxxxx", type = "password")
+    client = OpenAI(api_key=password)
+else:
+    client = OpenAI(api_key='ollama', base_url = 'http://localhost:11434/v1')
+
+
+st.session_state["openai_model"] = model
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
