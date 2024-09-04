@@ -5,7 +5,7 @@ GRUMPY_SCRIPT=./grumpy/grumpy.py
 # Update the API Key File Path
 API_KEY_FILE=.env #if using openai or ollama, please update the .env file with apikey
 API_TYPE=ollama #choose from azure, openai, ollama
-MODEL_NAME=medllama2 #choose from gpt-4o, gpt-4o-mini, llama3, meditron, medllama2
+MODEL_NAME=llama3 #choose from gpt-4o, gpt-4o-mini, llama3, meditron, medllama2
 
 INPUT_FILE_2="./examples/RNK_GSE164073_diff.sclera_CoV2_vs_sclera_mock.regulation.rank_/GMT_h.all.v2023.2.Hs.symbols"
 OUTFILES_PREFIX_2="GSE164073_sclera"

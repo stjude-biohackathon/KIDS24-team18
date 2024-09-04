@@ -4,3 +4,4 @@ pandas>=1.5.0
 pybedtools>=0.9.0
 numpy>=1.22.0
 jinja2
+streamlit
