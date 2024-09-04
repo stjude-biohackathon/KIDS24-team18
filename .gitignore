@@ -50,6 +50,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+*.md
+*.html
 
 # Translations
 *.mo
@@ -166,10 +168,10 @@ grumpy_env/
 
 # other grumpy files
 .grumpy.log
-*.precise.md 
+*.precise.md
 *.balanced.md
 *.creative.md
 *.evaluation.html
 .DS_Store
-*.png 
+*.png
 *.svg
