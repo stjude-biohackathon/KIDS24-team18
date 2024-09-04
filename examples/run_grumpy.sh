@@ -4,6 +4,7 @@
 GRUMPY_SCRIPT=./grumpy/grumpy.py
 # Update the API Key File Path
 API_KEY_FILE=.env
+API_TYPE=openai
 
 INPUT_FILE_2="./examples/RNK_GSE164073_diff.sclera_CoV2_vs_sclera_mock.regulation.rank_/GMT_h.all.v2023.2.Hs.symbols"
 OUTFILES_PREFIX_2="GSE164073_sclera"
@@ -18,4 +19,5 @@ python $GRUMPY_SCRIPT \
 --context $CONTEXT_FILE_2 \
 -p $PROTOCOL_2 \
 -r $REPORT_2 \
--k $API_KEY_FILE
+-k $API_KEY_FILE \
+--apiType $API_TYPE
