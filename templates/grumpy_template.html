@@ -169,17 +169,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const markdownContainer_precise = document.getElementById('markdown-content_precise');
-            markdownContainer_precise.innerHTML = marked.parse("{{ processedEvals['precise'] }}");
+            markdownContainer_precise.innerHTML = marked.parse("{{ processedEvals['precise'] | safe }}");
         });
 
         document.addEventListener('DOMContentLoaded', function () {
             const markdownContainer_balanced = document.getElementById('markdown-content_balanced');
-            markdownContainer_balanced.innerHTML = marked.parse("{{ processedEvals['balanced'] }}");
+            markdownContainer_balanced.innerHTML = marked.parse("{{ processedEvals['balanced'] | safe }}");
         });
 
         document.addEventListener('DOMContentLoaded', function () {
             const markdownContainer_creative = document.getElementById('markdown-content_creative');
-            markdownContainer_creative.innerHTML = marked.parse("{{ processedEvals['creative'] }}");
+            markdownContainer_creative.innerHTML = marked.parse("{{ processedEvals['creative'] | safe }}");
         });
     </script>
 </body>
