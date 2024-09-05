@@ -20,16 +20,9 @@ st.write("Grumpy (Generative Research Utility Model in Python) is a tool designe
 
 @st.cache_data
 def sidebar_links():
-    database_link_dict = {
-        "GitHub Page": "https://github.com/stjude-biohackathon/KIDS24-team18",
-        # "RCSB Protein Data Bank": "https://www.rcsb.org",
-    }
-
-    st.sidebar.markdown("## Resource-Related Links")
-    for link_text, link_url in database_link_dict.items():
-        st.sidebar.markdown(f"[{link_text}]({link_url})")
 
     software_link_dict = {
+        "GitHub Page": "https://github.com/stjude-biohackathon/KIDS24-team18",
         "Ollama": "https://ollama.com/",
         "Streamlit": "https://streamlit.io",
     }
@@ -44,6 +37,20 @@ def sidebar_links():
         if i == len(link_col_dict.keys()):
             i = 0
         st_col.markdown(f"[{link_text}]({link_url})")
+
+    st.sidebar.markdown("## Contact Us")
+    contact_link_dict = {
+        "Wojciech Rosikiewicz":"https://github.com/forrest1988",
+        "Tarun Mamidi": "https://github.com/tkmamidi",
+        "Shaurita Hutchins": "https://github.com/sdhutchins",
+        "Wenjie Qi": "https://github.com/WenjieQi",
+        "Felicia Iordachi":"https://github.com/felicia-19",
+        "Farzaan Quadri":""
+    }
+
+    # st.sidebar.markdown("## Contact-Related Links")
+    for link_text, link_url in contact_link_dict.items():
+        st.sidebar.markdown(f"[{link_text}]({link_url})")
 
 @st.cache_data
 def init_summary(uploaded_file):
@@ -71,8 +78,6 @@ model = st.sidebar.selectbox(
     "Select your model?",
     ("llama3.1", "gpt-4o", "gpt-4o-mini", "meditron"),
 )
-
-sidebar_links()
 
 if model in ["gpt-4o", "gpt-4o-mini"]:
     password = st.sidebar.text_input("Paste you OpenAI API key here: ", "sk-xxxxxxx", type = "password")
@@ -111,3 +116,5 @@ if uploaded_file:
             )
             response = st.write_stream(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
+
+sidebar_links()
