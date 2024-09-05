@@ -4,7 +4,48 @@ import logging
 import inspect
 import pandas as pd
 
-def parseStandardRepDir(reportDir, protocol, outfilesPrefix, force, outputDirectory, hidden=False):
+
+# Function to generate a prompt for each sample
+def generate_sample_prompt(row, protocol):
+    # Dynamically create the list of columns and values
+    sample_data = "\n".join([f"- {col}: {row[col]}" for col in row.index])
+    
+    # Generate the prompt
+    prompt = f"""
+    You are given the following sample data:
+    {sample_data}
+    
+    The protocol used is {protocol}. Based on this data, evaluate the quality of the sample simply describing it as 'High Quality' or 'Low Quality', no other description whatsoever - its critical for downstream processing. Remember to be a critique about it.
+    """
+    return prompt
+
+# Function to process each row and return the quality assessment
+def assess_sample_quality(df, protocol, keyFile, apiType, gptModel, outfileName=".tmpSampleEval.txt", hidden=False):
+    assessments = []
+
+    # Loop through each row in the DataFrame
+    from grumpy import grumpyConnect
+
+    for index, row in df.iterrows():
+
+        # Generate a prompt for the current row
+        prompt = generate_sample_prompt(row, protocol)
+        
+        grumpyRole = "You are a QC expert for NGS data."
+
+        response = grumpyConnect(keyFile, apiType, gptModel, grumpyRole, prompt, outfileName,
+                                 max_tokens=2000, hidden=hidden, temperature=0.1, top_p=0.6, saveResponse=False)
+
+        # Append the result for this row
+        assessments.append({
+            'SAMPLE': row['SAMPLE'],
+            'Assessment': response
+        })
+    
+    # Return a DataFrame with the assessments
+    return pd.DataFrame(assessments)
+
+def parseStandardRepDir(reportDir, protocol, outfilesPrefix, force, outputDirectory, keyFile, apiType, gptModel, hidden=False):
     """
     Parses the standard report directory to extract relevant statistics and peak information.
 
@@ -95,8 +136,15 @@ def parseStandardRepDir(reportDir, protocol, outfilesPrefix, force, outputDirect
             else:
                 statsDf = statsDf[0]
         
+
+        ### Evaluate the sample by sample quality:
+        dfEval = assess_sample_quality(df, protocol, keyFile, apiType, gptModel, hidden=True)
+        
+        if (statsDf.shape[0] == dfEval.shape[0]) and ("SAMPLE" in list(statsDf)) and ("SAMPLE" in list(dfEval)):
+            dfs = [df.set_index('SAMPLE') for df in [statsDf, dfEval]]
+            statsDf = dfs[0].join(dfs[1:])
         ### Save the DataFrame to a TSV file
-        statsDf.to_csv(outfileName, sep='\t', index=False)
+        statsDf.to_csv(outfileName, sep='\t')#, index=False)
 
         lgr.info("Successfully parsed the report directory with information for {} samples.".format(len(statsDf)))
     

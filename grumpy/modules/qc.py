@@ -19,8 +19,6 @@ from utils.compression import compress_text, decompress_text
 from utils.peak_analysis import determinePkCalling, getPeakNumber
 from utils.report_parsing import parseStandardRepDir
 
-from openai import AzureOpenAI, AuthenticationError, OpenAI
-
 def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
                   outfileNameShort, hidden=False):
     """
