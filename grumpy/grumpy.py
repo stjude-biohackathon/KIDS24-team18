@@ -187,7 +187,7 @@ def parseArgs():
 
     if "gptModel" in params:
         if params["gptModel"] == "RECOMMENDED" and params['mode'] == "QC":
-            params["gptModel"] = "gpt-3.5-turbo"
+            params["gptModel"] = 'gpt-4o-mini'
         elif params["gptModel"] == "RECOMMENDED" and params['mode'] == "chat":
             params["gptModel"] = "llama3"
     
@@ -203,7 +203,7 @@ def parseArgs():
 
     return params
 
-def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=28000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True):
+def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=28000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True, saveResponse=True):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
 
     if hidden == False:
@@ -249,9 +249,13 @@ def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, ma
 
     if requestedCompletionTokens < 0:
         lgr.error(f"The prompt is too long to fit into the '{gptModel}' model. Please shorten the prompt or increase the max number of tokes assigned (if possible).")
-        outfile = open(outfileName, "w")
-        outfile.write(f"The prompt is too long to fit into the '{gptModel}' model. Please shorten the prompt or increase the max number of tokes assigned (if possible). DEBUG info: Total tokens in the prompt: {total_tokens}; max_tokens set in grumpyConnect function: {max_tokens}; tokens assigned per model: {getMaxTokenPerModel(gptModel)}")
-        outfile.close()
+        response = f"The prompt is too long to fit into the '{gptModel}' model. Please shorten the prompt or increase the max number of tokes assigned (if possible). DEBUG info: Total tokens in the prompt: {total_tokens}; max_tokens set in grumpyConnect function: {max_tokens}; tokens assigned per model: {getMaxTokenPerModel(gptModel)}"
+        if saveResponse:
+            outfile = open(outfileName, "w")
+            outfile.write(response)
+            outfile.close()
+        else:
+            return response
     else:
         try:
             # print("#!#!#gptModel: ", gptModel)  # DEBUG
@@ -273,21 +277,30 @@ def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, ma
                                                           stop=None
                                                         )
             # print(completion.choices[0].message.content)
-            outfile = open(outfileName, "w")
-            outfile.write(completion.choices[0].message.content)
-            outfile.close()
-            lgr.info("The full assesment was saved to the file '{}'.".format(outfileName))
+            if saveResponse:
+                outfile = open(outfileName, "w")
+                outfile.write(completion.choices[0].message.content)
+                outfile.close()
+                lgr.info("The full assesment was saved to the file '{}'.".format(outfileName))
+            else:
+                return completion.choices[0].message.content
 
         except AuthenticationError as e:
             lgr.error(f"Failed to authenticate with OpenAI API. Please check your API key and permissions. Error details: {e}")
-            outfile = open(outfileName, "w")
-            outfile.write("Failed to authenticate with OpenAI API. Please check your API key and permissions. Also, most likely the API key is expired.")
-            outfile.close()
+            if saveResponse:
+                outfile = open(outfileName, "w")
+                outfile.write("Failed to authenticate with OpenAI API. Please check your API key and permissions. Also, most likely the API key is expired.")
+                outfile.close()
+            else:
+                return "Failed to authenticate with OpenAI API. Please check your API key and permissions. Also, most likely the API key is expired."
         except Exception as e:
             lgr.error(f"An unexpected error occurred: {e}")
-            outfile = open(outfileName, "w")
-            outfile.write("An unexpected error occurred while calling the OpenAI API.")
-            outfile.close()
+            if saveResponse:
+                outfile = open(outfileName, "w")
+                outfile.write("An unexpected error occurred while calling the OpenAI API.")
+                outfile.close()
+            else:
+                return "An unexpected error occurred while calling the OpenAI API."
 
 def callGrumpyGSEA_sanityCheck(referencePathwaysList, grumpyEvaluationFile, pattern=r'\|\|([^|]+)\|\|'):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
@@ -580,7 +593,7 @@ def main():
 
     if params["keyFilePresent"]:
         if params["reportType"] == 'std':
-            metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], params['outputDirectory'], hidden=params["hidden"])
+            metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], params['outputDirectory'], params['apikey'], params["apiType"], params["gptModel"], hidden=params["hidden"])
             callGrumpySTD(metaFile, params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
         elif params["reportType"] in ['gsealist', 'gseareport']:
             callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
