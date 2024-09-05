@@ -5,3 +5,7 @@ pybedtools>=0.9.0
 numpy>=1.22.0
 jinja2
 streamlit
+langchain
+langchain_experimental
+langchain_openai
+tabulate
