@@ -1,0 +1,29 @@
+# Introduction:
+## Purpose: Identify the differential peaks of interest based on specific biological content.
+## Data Description: Analysis will be based on the statistics in provided tables. Each table's column definitions are provided.
+
+# Instructions for Analysis:
+## Input format: The query that you will receive will be a TSV formatted table with peak numbers for each replicate in every group which you should evaluate. The columns description in this table are:
+### Region: peaks, (i.e genomic regions), which are used in the differential peaks analysis between two conditions.
+### log2FC: log2(fold change). For example, in a case of the log2FC = 2 in comparison of WT and KO, that means the peak in WT has is 2 fold compared with the same peak in KO.
+### log2AveExpr: log2 of the average expression value of all sample.
+### t.value: statistical t-value
+### p.value: statistical p-value
+### q.value: adjusted p values, here it is also referred as FDR.
+### Regulation: differential peak catergories, which include Up2, Up2NoFDR, Up, Control, DownNoFDR, Down, Down2NoFDR, Down2.
+### Gene_2kb: genes locate within 2000 base pairs(bp) of the peaks.
+### Gene_2-50kb: genes locate between 2000 base pairs (bp) and 50000 base pairs (bp) of the peaks.
+### Closest_Gene: the closest gene to the peak
+### Distance: genomic distance between the peak and the closest genes.
+### FeatureAssignment: genomic features of the peak location, i.e the genomic features of the peak location, including Promoter.up, Promoter.Down, Exon, Intron, TES (transcription end sites), Dis5 (5' distal regions), Dis3 (3' distal regions), Intergenic.
+## Analysis: Find out differential peaks are in the genes's promoters or enhancers, these genes are related to a specific biological process of interest.
+### Identify differentail peaks, i.e up2 or down2 regulation peaks,  that regulate genes related in a biological process, and also report the genes.
+### Provide evidence for the identified peaks.
+## Summary of Observations:
+### Summarize peaks identified. E.g. "chr8:127,733,134-127,733,434 is down regulated with down2 regulation in KO groups, this peak is in the promoter region of MYC. The down-regulation of MYC contributes to cancers.", I am only interested in peaks that are located in promoter regions.
+### If in my input that I am pretty sure some genes that for sure have down-regulated peaks in their promoter region, but the data didn't show it, work as a QC for differential peak analysis, and output that the differential peaks doesn't work as expected.
+
+# Additional Guidelines:
+## Specific description of knowlege of what is expected in the sample, like the comparison is WT against KO
+### Differential peaks: peaks with up2 or down2 regulations
+### Description of the samples and conditions:

@@ -26,6 +26,8 @@ from utils.compression import compress_text, decompress_text
 from utils.peak_analysis import determinePkCalling, getPeakNumber
 from utils.report_parsing import parseStandardRepDir
 from modules.qc import callGrumpySTD
+from modules.dpk import callGrumpyDPKQC
+from modules.dpk import callGrumpyDPKExtract
 
 from pathlib import Path
 import tiktoken
@@ -87,12 +89,16 @@ def parseArgs():
     optionalParams_deg = degParser.add_argument_group("Optional DEG parameters")
     
 
-    ### DEG Parser for conversational evaluation.
+    ### DPK Parser for conversational evaluation.
     dpkParser = subparsers.add_parser('DPK', help='Run evaluation of the Differentially Peaks (DPK), so either differentially binding regions from protocols like ChIP-seq or differentially accessible ones from protocols like ATAC-seq.', parents=[common_parser])
-
-    optionalParams_dpk = dpkParser.add_argument_group("Optional DEG parameters")
+     
+    requiredParams_dpk = dpkParser.add_argument_group('REQUIRED PE parameters')
+    requiredParams_dpk.add_argument("-p", "--protocol", help="What protocol is to be considered? if you have protocol not listed, use 'other' and add a name of the protocol in the -n flag.", action="store", type=str, required=True, dest="protocol", choices = ['cutandrun', 'chipseq', 'atacseq', 'other'])
     
-
+    optionalParams_dpk = dpkParser.add_argument_group("Optional DPK parameters")
+    optionalParams_dpk.add_argument("-c", "--context", help="specific biological context of interest, should be a full path to the file.", action="store", type=str, required=False, default="ignore")
+    
+    
     ### GrumpyChat Parser for conversational evaluation.
     chatParser = subparsers.add_parser('chat', help='Nice chat with the Grumpy AI', parents=[common_parser])
 
@@ -169,6 +175,14 @@ def parseArgs():
             pass
         else:
             lgr.error(f"The input file '{params['inputDirectory']}' should be an HTML file when working in 'decode' mode. Program was aborted.")
+            errors = True
+
+    if params["mode"] == "DPK":
+        if os.path.exists(params["inputDirectory"]):
+            params["reportType"] = "dpk"
+            pass
+        else:
+            lgr.error(f"The input direcoty doesn't exsit, Program was aborted.")
             errors = True
     
     params["keyFilePresent"] = True
@@ -586,6 +600,9 @@ def main():
             callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
         elif params["reportType"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
+        elif params["reportType"] == 'dpk':
+            callGrumpyDPKQC(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])
+            callGrumpyDPKExtract(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params["hidden"])
     else:
         outfile = open(outfileName, "w")
         outfile.write("API key file was not provided or not accessible, GrumPy's evaluation cannot be performed.")
