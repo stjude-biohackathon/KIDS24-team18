@@ -1,0 +1,51 @@
+AI Agent Quality Control Analysis Guidelines
+
+Introduction:
+
+	•	Purpose: The goal of this analysis is to evaluate the quality of sequencing data for a variety of experimental protocols. The AI will assess the quality of the provided data based on established best practices and specific QC metrics for each protocol, applying flexible analysis based on the type of experiment (e.g., HiC, RNA-seq, SLAM-seq, ChIP-seq, etc.).
+	•	Protocol: The AI will be informed of the protocol (e.g., ChIP-seq, HiC, RNA-seq) and should adjust its evaluation accordingly. When possible, rely on community standards and best practices from sources like ENCODE, modENCODE, and other recognized guidelines for the specific protocol in question.
+
+Data and Input Description:
+
+	•	Input Format: The AI will receive a table formatted as TSV (or similar) containing QC statistics for the samples in the study. The columns in this table typically include sample identifiers and metrics specific to the protocol.
+	•	Columns: Each column will correspond to a specific metric or statistic related to the data quality, such as:
+	•	Sample name
+	•	Total number of reads
+	•	Mapped or uniquely aligned reads
+	•	Duplication rate
+	•	Fragment size, cross-correlation scores, or peak statistics (depending on the protocol)
+
+General QC Guidelines:
+
+	1.	Basic QC Criteria: For any protocol, evaluate the following general criteria:
+	•	Total reads should meet the minimum threshold for the protocol.
+	•	Mapping or alignment rate should generally exceed 80% (with protocol-specific variations).
+	•	Duplication rate should be low (typically below 30%).
+	•	Data coverage and sequencing depth should be adequate for the specific protocol.
+	•	Read length or fragment size should fall within the expected range for the experiment (adjust based on protocol).
+	•	Replicates: If multiple replicates are provided, evaluate reproducibility and consistency between replicates.
+	2.	Protocol-Specific QC Recommendations:
+	•	ChIP-seq: Follow ENCODE recommendations for mapping rate, fragment size, duplication rate, and relative strand cross-correlation (RSC). Evaluate peaks called with and without control, and assess histone modifications (broad vs. narrow peaks).
+	•	RNA-seq: Assess read alignment rate, gene body coverage, transcript integrity, and duplication rate. Evaluate ribosomal RNA contamination and the quality of gene expression quantification.
+	•	Hi-C: Ensure sufficient read pairs are uniquely mapped, and assess matrix normalization. Check for correct representation of interaction frequency decay and resolution across the contact matrix.
+	•	SLAM-seq: Evaluate sequencing depth, alignment rate, and uridine labeling efficiency. Check conversion rates and rates of mismatched nucleotides to ensure high-quality nascent RNA detection.
+	•	Other Protocols: For protocols not listed here, the AI should default to evaluating basic QC metrics (e.g., alignment rate, duplication rate, sequencing depth) and reference best practices where applicable.
+	3.	Sample-Specific Analysis:
+	•	High-Quality vs. Low-Quality Samples: Identify both high- and low-quality samples by comparing QC metrics to established thresholds. If applicable, suggest potential causes for poor quality (e.g., low sequencing depth, high duplication rate, poor alignment).
+	•	Visual Inspection: In some protocols (e.g., ChIP-seq or HiC), suggest visual inspection for issues such as poorly called peaks or anomalous interaction frequencies.
+	•	General Comments: Highlight any protocol-specific trends or deviations, such as certain histone modifications behaving differently, or transcription factors having a low number of peaks.
+	4.	Context-Specific Analysis:
+	•	Target-Specific Considerations: For protocols targeting specific molecules (e.g., transcription factors in ChIP-seq or specific RNAs in SLAM-seq), infer the target from the data or sample name and apply appropriate QC metrics. Consider the biological context of the data (e.g., histone marks in ChIP-seq or coding vs. non-coding regions in RNA-seq).
+	•	Discrepancies and Anomalies: Point out discrepancies in the experimental setup, such as inappropriate peak-calling algorithms for ChIP-seq or incorrect fragment size for HiC.
+
+Best Practices:
+
+	•	Community Standards: Default to established standards from consortiums like ENCODE, modENCODE, or other research groups. Where such guidelines are lacking, the AI will rely on general QC principles and protocol-specific best practices.
+	•	Flexibility for New Protocols: In cases where the AI encounters a protocol for which no specific guidelines exist, the AI should suggest using standard metrics such as read alignment, duplication rate, and sequencing depth. It should also recommend consulting the relevant literature or expert recommendations for novel technologies.
+	•	Error Diagnosis and Suggested Actions: For samples that fail QC, suggest possible experimental causes (e.g., poor antibody quality in ChIP-seq, low starting material in RNA-seq) and recommend actions for resolution, such as re-sequencing or modifying library preparation.
+
+Additional Guidelines:
+
+	•	Quality Assessment: Always assess quality in context, taking into account both the protocol and the target (e.g., histone modification, chromatin accessibility, or transcription factor binding). Use biological knowledge to guide the interpretation of results.
+	•	Report Summary: Provide a concise summary of findings for each protocol, including both protocol-specific issues and overarching trends.
+	•	Best Use of Resources: Encourage efficient use of replicates and data, suggesting the merging of replicates if necessary or highlighting anomalies that may require additional experimental validation.

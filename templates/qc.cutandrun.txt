@@ -1,5 +1,5 @@
 # Introduction:
-## Purpose: Assess the quality of peak calling in a specified experiment, here the protocol is Cut-and-Run.
+## Purpose: Assess the quality of mapping or peak calling in a specified experiment, here the protocol is Cut-and-Run.
 ## Data Description: Analysis will be based on the statistics in provided tables. Each table's column definitions are provided.
 
 # Instructions for Analysis:
