@@ -5,16 +5,6 @@ import streamlit as st
 import pandas as pd
 # from langchain_openai import OpenAI
 
-st.set_page_config(
-    page_title="Grumpy",
-    page_icon="🧊",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Report a bug': "https://github.com/stjude-biohackathon/KIDS24-team18/issues",
-        'About': "Grumpy (Generative Research Utility Model in Python) is a tool designed to conduct Biological Context Analysis (BCA). It utilizes Large Language Models (LLMs) such as OpenAI's GPT-4 (St. Jude Dedicated Instance) or other models like Llama from Meta."
-    }
-)
 
 @st.cache_resource
 def pandas_agent(uploaded_file):
@@ -38,16 +28,16 @@ uploaded_file = st.file_uploader("Upload a QC file") #, accept_multiple_files = 
 # st.write(uploaded_file)
 if uploaded_file:
     agent = pandas_agent(uploaded_file)
-    if "messages" not in st.session_state:
-        messages = [
+    # if "messages" not in st.session_state:
+    messages = [
     (
         "system",
         "You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words). Moreover, please be as critique, as skeptical and as realistic as possible, I want you to be able to provide focus on the low-quality aspects of the data for the human recipient of your message. If you don't find any issues with the data, don't make them up, instead just please write that it all rather looks good etc.,"
     ),
     ("human", "Summarize the data"),
 ]
-        response=agent.invoke(messages)
-        st.session_state.messages = [{"role": "assistant", "content": response['output']}]
+    response=agent.invoke(messages)
+    st.session_state.messages.append([{"role": "assistant", "content": response['output']}])
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
