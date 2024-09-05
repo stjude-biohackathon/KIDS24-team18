@@ -1,105 +1,38 @@
 """The purpose of this script is to be a helper script for the GPT-based evaluation of standard or standardized reports."""
 
-showLoadingTimes = True # for debugging purposes only
+from sys import argv, stdout
+import os, glob
+import re
+import subprocess
+import argparse
 
-### Load basic libraries:
-if showLoadingTimes:
-    from datetime import datetime
-    start = datetime.now()
-    from sys import argv, stdout
-    print(f"Loading: `from sys import argv, stdout` took {datetime.now()-start}")
+import logging
+import inspect
 
-    start = datetime.now()
-    import os, glob
-    print(f"Loading: `import os, glob` took {datetime.now()-start}")
+import string
+from random import choice
 
-    start = datetime.now()
-    import re
-    print(f"Loading: `import re` took {datetime.now()-start}")
+import datetime
 
-    start = datetime.now()
-    import subprocess
-    print(f"Loading: `import subprocess` took {datetime.now()-start}")
+import zlib
+import base64
 
-    start = datetime.now()
-    import argparse
-    print(f"Loading: `import argparse` took {datetime.now()-start}")
+from math import ceil
+from utils.logger import CustomFormatter
+from utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
+from utils.utils import id_generator, load_template, str2bool
+from utils.tokenization import getMaxTokenPerModel
+from utils.compression import compress_text, decompress_text
+from utils.peak_analysis import determinePkCalling, getPeakNumber
+from utils.report_parsing import parseStandardRepDir
+from modules.qc import callGrumpySTD
 
-    start = datetime.now()
-    import logging
-    print(f"Loading: `import logging` took {datetime.now()-start}")
-
-    start = datetime.now()
-    import inspect
-    print(f"Loading: `import inspect` took {datetime.now()-start}")
-
-    start = datetime.now()
-    import string
-    print(f"Loading: `import string` took {datetime.now()-start}")
-
-    start = datetime.now()
-    from random import choice
-    print(f"Loading: `from random import choice` took {datetime.now()-start}")
-
-    start = datetime.now()
-    import zlib
-    print(f"Loading: `import zlib` took {datetime.now()-start}")
-
-    start = datetime.now()
-    import base64
-    print(f"Loading: `import base64` took {datetime.now()-start}")
-
-    start = datetime.now()
-    from math import ceil
-    print(f"Loading: `from math import ceil` took {datetime.now()-start}")
-
-    start = datetime.now()
-    from pathlib import Path
-    print(f"Loading: `from pathlib import Path` took {datetime.now()-start}")
-
-    start = datetime.now()
-    from utils.logger import CustomFormatter
-    from utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
-    from utils.utils import id_generator, load_template, str2bool, caesar_cipher
-    from utils.tokenization import getMaxTokenPerModel
-    from utils.compression import compress_text, decompress_text
-    from utils.peak_analysis import determinePkCalling, getPeakNumber
-    from utils.report_parsing import parseStandardRepDir
-    print(f"Loading: `import CustomFormatter` took {datetime.now()-start}")
-
-    #### This one had to be loaded in the end, because it was causing the error with the datetime.datetime.now() function
-    start = datetime.now()
-    import datetime
-    print(f"Loading: `import datetime` took {datetime.datetime.now()-start}")
-
-
-else:
-
-    from sys import argv, stdout
-    import os, glob
-    import re
-    import subprocess
-    import argparse
-
-    import logging
-    import inspect
-
-    import string
-    from random import choice
-
-    import datetime
-
-    import zlib
-    import base64
-
-    from math import ceil
-    from utils.logger import CustomFormatter
-    from utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
-    from utils.utils import id_generator, load_template, str2bool
-    from utils.tokenization import getMaxTokenPerModel
-    from utils.compression import compress_text, decompress_text
-    from utils.peak_analysis import determinePkCalling, getPeakNumber
-    from utils.report_parsing import parseStandardRepDir
+from pathlib import Path
+import tiktoken
+from openai import AzureOpenAI, AuthenticationError, OpenAI
+import pandas as pd
+from pybedtools import BedTool
+import numpy as np
 
 def parseArgs():
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
@@ -170,7 +103,7 @@ def parseArgs():
     decodeParser = subparsers.add_parser('decode', help='Small tool to decode / extract the information from the HTML file.', parents=[common_parser])
 
     
-    
+
     params = vars(parser.parse_args())
 
     lgr.info("Parsed arguments: {}".format(params))
@@ -230,70 +163,27 @@ def parseArgs():
                 errors = True
 
     # lgr.info("Report type (--reportType flag): {}".format(params["reportType"]))
-
+    
     if params["mode"] == "decode":
         if params["inputDirectory"].endswith(".html"):
             pass
         else:
             lgr.error(f"The input file '{params['inputDirectory']}' should be an HTML file when working in 'decode' mode. Program was aborted.")
             errors = True
-    else:
-        global tiktoken
-        global AzureOpenAI
-        global OpenAI
-        global pd
-        global BedTool
-        global AuthenticationError
-        global np
+    
+    params["keyFilePresent"] = True
+    if not os.path.exists(params["apikey"]):
+        lgr.error("The API-KEY file '{}' does not exist. Program was aborted.".format(params["apikey"]))
+        params["keyFilePresent"] = False
+    # lgr.info("API-KEY file (--apikey flag): {}".format(params["apikey"]))
 
-        lgr.info("Loading additional libreries needed for the Grumpy evaluation, please wait...")
-        if showLoadingTimes:
-            start = datetime.datetime.now()
-
-            import tiktoken
-            lgr.info("Loaded: `import tiktoken` took %s", datetime.datetime.now()-start)
-
-            start = datetime.datetime.now()
-            from openai import AzureOpenAI, AuthenticationError, OpenAI
-            lgr.info("Loaded: `from openai import AzureOpenAI, AuthenticationError, OpenAI` took %s", datetime.datetime.now()-start)
-
-            start = datetime.datetime.now()
-            import pandas as pd
-            lgr.info(f"Loaded: `import pandas as pd` took {datetime.datetime.now()-start}")
-
-            start = datetime.datetime.now()
-            from pybedtools import BedTool
-            lgr.info(f"Loaded: `from pybedtools import BedTool` took {datetime.datetime.now()-start}")
-
-            start = datetime.datetime.now()
-            import numpy as np
-            lgr.info(f"Loaded: `import numpy as np` took {datetime.datetime.now()-start}")
-
+    # check if context is a file or a string:
+    if "context" in params:
+        if os.path.exists(params["context"]):
+            with open(params["context"], 'r') as file:
+                params["context"] = file.read()
         else:
-
-            # import openai
-            import tiktoken
-            from openai import AzureOpenAI, AuthenticationError
-
-            import pandas as pd
-
-            from pybedtools import BedTool
-
-            import numpy as np
-
-        params["keyFilePresent"] = True
-        if not os.path.exists(params["apikey"]):
-            lgr.error("The API-KEY file '{}' does not exist. Program was aborted.".format(params["apikey"]))
-            params["keyFilePresent"] = False
-        # lgr.info("API-KEY file (--apikey flag): {}".format(params["apikey"]))
-
-        # check if context is a file or a string:
-        if "context" in params:
-            if os.path.exists(params["context"]):
-                with open(params["context"], 'r') as file:
-                    params["context"] = file.read()
-            else:
-                params["context"] = params["context"]
+            params["context"] = params["context"]
 
     if "gptModel" in params:
         if params["gptModel"] == "RECOMMENDED" and params['mode'] == "QC":
@@ -312,111 +202,6 @@ def parseArgs():
         raise Exception("Errors found while parsing parameters")
 
     return params
-
-
-def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
-                  outfileNameShort, hidden=False):
-    """
-    Function to call the Grumpy AI for generating a standard report based on a metafile. 
-    The function handles renaming of old assessments, setting up the role for Grumpy, 
-    processing QC tables, and finally generating both detailed and concise assessment reports.
-
-    Parameters:
-    -----------
-    metaFile : str
-        Path to the metafile containing data for QC evaluation.
-    protocol : str
-        Type of protocol used (e.g., 'cutrun', 'chip'). Determines the basic role for Grumpy.
-    protocolFullName : str
-        Full name of the protocol used. Required if 'protocol' is set to 'other'.
-    outfilesPrefix : str
-        Prefix for the output files.
-    force : bool
-        If True, force the generation of reports even if previous reports exist.
-    keyFile : str
-        Path to the file containing the API key for Grumpy.
-    apiType : str
-        Type of API used for Grumpy.
-    gptModel : str
-        Name of the GPT model used for generating reports.
-    outfileName : str
-        Name of the file where the full assessment report will be saved.
-    outfileNameShort : str
-        Name of the file where the concise assessment report will be saved.
-    hidden : bool, optional
-        If True, certain actions are hidden or not logged. Default is False.
-
-    Returns:
-    --------
-    None
-    """
-    # Initialize logger for this function
-    lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
-    lgr.info("Calling the Grumpy for the standard report metafile '{}'.".format(metaFile))
-    
-    ### Renaming old assessments if they already exist
-    if os.path.exists(outfileName):
-        movedOutfileName = f"{outfileName}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileName)).strftime('%Y%m%d')}.{id_generator()}.txt"
-        os.rename(outfileName, movedOutfileName)
-        lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileName, movedOutfileName)
-    
-    if os.path.exists(outfileNameShort):
-        movedOutfileName = f"{outfileNameShort}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileNameShort)).strftime('%Y%m%d')}.{id_generator()}.txt"
-        os.rename(outfileNameShort, movedOutfileName)
-        lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileNameShort, movedOutfileName)
-    
-    ### Define descriptions for the basic role for Grumpy based on the protocol
-    basicRole = load_template(protocol)
-    if protocol == "other":
-        basicRole = f"First and foremost, you are here going to analyze the data from the '{protocolFullName}' protocol. The following are the general guidelines for the analysis that you have to run, without any specific protocol in mind, so please adjust accordingly to the procol specified here as '{protocolFullName}'."
-
-    grumpyRole = f"""
-    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words). 
-    Moreover, please be as critique, as skeptical and as realistic as possible, I want you to be able to provide focus on the low-quality aspects of the data for the human recipient of your message. If you don't find any issues with the data, don't make them up, instead just please write that it all rather looks good etc.
-
-    Finally, when you mention the actual sample names, always put two vertical bars (i.e. "||") before and after the name, e.g. ||123451_H3K27Ac_rep1||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
-
-    {basicRole}
-    """
-
-    ### Read the metafile as a simple text file
-    with open(metaFile, 'r') as f:
-        QC_table = f.read()
-
-    ### Process the metafile as a pandas DataFrame and evaluate duplication rates
-    df = pd.read_csv(metaFile, sep="\t")
-    dupColName = "ignore"
-    for col in ["DUPLICATION (%)", "Duplication Rate(%)"]:
-        if col in df.columns:
-            dupColName = col
-    if dupColName != "ignore":
-        try:
-            df[dupColName] = df[dupColName].str.replace("%", "").astype(float)
-        except AttributeError:
-            pass
-        highDuplicationSamples = df[df[dupColName] > 30].shape[0]
-        if highDuplicationSamples > 0:
-            highDupNote = f"Additional Note: There are {highDuplicationSamples} samples with duplication rates higher than 30%."
-            QC_table += f"\n\n{highDupNote}\n"
-
-    ### Evaluate mapping rates and append notes if applicable
-    mapColName = "ignore"
-    for col in ["Mapping Rate(%)", "MAPPED (%)"]:
-        if col in df.columns:
-            mapColName = col
-    if mapColName != "ignore":
-        try:
-            df[mapColName] = df[mapColName].str.replace("%", "").astype(float)
-        except AttributeError:
-            pass
-        lowMappingSamples = df[df[mapColName] < 80].shape[0]
-        if lowMappingSamples > 0:
-            lowMapNote = f"Additional Note: There are {lowMappingSamples} samples with mapping rates lower than 80%."
-            QC_table += f"\n\n{lowMapNote}\n"
-
-    ### Connect to Grumpy AI and generate the reports
-    grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
-    # grumpyConnect(keyFile, apiType, gptModel, grumpyRoleShorter, QC_table, outfileNameShort)
 
 def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=28000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
