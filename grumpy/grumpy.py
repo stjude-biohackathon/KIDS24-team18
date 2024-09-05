@@ -26,6 +26,7 @@ from utils.compression import compress_text, decompress_text
 from utils.peak_analysis import determinePkCalling, getPeakNumber
 from utils.report_parsing import parseStandardRepDir
 from modules.qc import callGrumpySTD
+from .version import __version__
 
 from pathlib import Path
 import tiktoken
@@ -503,11 +504,11 @@ def callGrumpyGSEA(reportType, protocol, inputDirectory, force, keyFile, apiType
                 downPathways = ["No significant downregulated pathways were found."]
 
             pathwaysList = f"""
-Found {len(signUpPaths)} of significantly upregulated pathways. Top {np.min([topPaths, len(signUpPaths)])} are:
-{upPathways}
+            Found {len(signUpPaths)} of significantly upregulated pathways. Top {np.min([topPaths, len(signUpPaths)])} are:
+            {upPathways}
 
-Found {len(signDownPaths)} of significantly downregulated pathways. Top {np.min([topPaths, len(signDownPaths)])} are:
-{downPathways}
+            Found {len(signDownPaths)} of significantly downregulated pathways. Top {np.min([topPaths, len(signDownPaths)])} are:
+            {downPathways}
             """
     else:
         pathwaysList = "unrecognized report type - report an error"
@@ -522,13 +523,13 @@ Found {len(signDownPaths)} of significantly downregulated pathways. Top {np.min(
         ```"""
 
 
-    basicRole = f"""
-In this task, you are focusing on the list of gene signatures / gene sets / pathways, coming from the Gene Set Enrichment Analysis (GSEA). Your goal is to analyze all those pathways presented to you, and to highlight the most relevant ones, emphasizing why do you think they are relevant.
-Moreover, please be as critique, as skeptical and as realistic as possible, dont make things up. If you find some potentially interesting patterns, mention them. If you find something that is worht further exploring, mention that as well. If something doesnt make sense, e.g. you identify contradictory results of some sort, please feel free to mention that as well. But if you dont find anything interesting, just say that you dont find anything interesting and that is much better than making things up.
+    basicRole = """
+    In this task, you are focusing on the list of gene signatures / gene sets / pathways, coming from the Gene Set Enrichment Analysis (GSEA). Your goal is to analyze all those pathways presented to you, and to highlight the most relevant ones, emphasizing why do you think they are relevant.
+    Moreover, please be as critique, as skeptical and as realistic as possible, dont make things up. If you find some potentially interesting patterns, mention them. If you find something that is worht further exploring, mention that as well. If something doesnt make sense, e.g. you identify contradictory results of some sort, please feel free to mention that as well. But if you dont find anything interesting, just say that you dont find anything interesting and that is much better than making things up.
 
-Assuming that you indeed identify the pathways worth highlighting, try to separate them into specific categories, like pathways related with cell proliferation, pathways relevant for immune system or for signalling etc. But be flexible while categorizing and take the biological context into account.
+    Assuming that you indeed identify the pathways worth highlighting, try to separate them into specific categories, like pathways related with cell proliferation, pathways relevant for immune system or for signalling etc. But be flexible while categorizing and take the biological context into account.
 
-Finally, when you mention the actual pathway's name, always put two vertical bars (i.e. "||")  before and after the name, e.g. ||KEGG_CELL_CYCLE||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
+    Finally, when you mention the actual pathway's name, always put two vertical bars (i.e. "||")  before and after the name, e.g. ||KEGG_CELL_CYCLE||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
     """
 
 #     grumpyRole = f"""
@@ -540,11 +541,11 @@ Finally, when you mention the actual pathway's name, always put two vertical bar
 #     """
 
     grumpyRole = f"""
-You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the evaluation for their data, in better understanding them and in finding patterns relevant for further studies.
---------
-{basicRole}
---------
-{contextDescription}
+    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the evaluation for their data, in better understanding them and in finding patterns relevant for further studies.
+    --------
+    {basicRole}
+    --------
+    {contextDescription}
     """
     ## Please be concise in your evaluation.
 
@@ -564,7 +565,6 @@ You are an AI assistant that acts as the Computational Biology expert in the are
     callGrumpyGSEA_reporter(referencePathwaysList, species, outfileName_precise, outfileName_balanced,
                             outfileName_creative, outfileName_report, grumpyRole, pathwaysList, context, outfileNamePrefix)
 
-__version__ = "0.3.0-alpha"
 
 def main():
     CustomFormatter.configure_logging()
@@ -580,10 +580,13 @@ def main():
 
     if params["keyFilePresent"]:
         if params["reportType"] == 'std':
-            metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], params['outputDirectory'], hidden=params["hidden"])
-            callGrumpySTD(metaFile, params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
+            metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], 
+                                           params['outputDirectory'], hidden=params["hidden"])
+            callGrumpySTD(metaFile, params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], 
+                          params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
         elif params["reportType"] in ['gsealist', 'gseareport']:
-            callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
+            callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], 
+                           params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
         elif params["reportType"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
     else:
