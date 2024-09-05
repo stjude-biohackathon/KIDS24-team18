@@ -26,6 +26,7 @@ from utils.compression import compress_text, decompress_text
 from utils.peak_analysis import determinePkCalling, getPeakNumber
 from utils.report_parsing import parseStandardRepDir
 from modules.qc import callGrumpySTD
+from modules.mea import callGrumpyMEA
 
 from pathlib import Path
 import tiktoken
@@ -107,7 +108,6 @@ def parseArgs():
     params = vars(parser.parse_args())
 
     lgr.info("Parsed arguments: {}".format(params))
-    lgr.info("Protocol (--protocol flag): {}".format(params["protocol"]))
 
     errors = False
     if not os.path.exists(params["inputDirectory"]):
@@ -592,13 +592,18 @@ def main():
     outfileNameShort = os.path.join(params['outputDirectory'], f"{params['outfilesPrefix']}.concise.md")
 
     if params["keyFilePresent"]:
-        if params["reportType"] == 'std':
+        if params["mode"] == 'QC':
             metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], params['outputDirectory'], params['apikey'], params["apiType"], params["gptModel"], hidden=params["hidden"])
             callGrumpySTD(metaFile, params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
-        elif params["reportType"] in ['gsealist', 'gseareport']:
-            callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
-        elif params["reportType"] == 'decode':
+        elif params["mode"] == 'PE':
+            if params["reportType"] in ['gsealist', 'gseareport']:
+                callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
+        elif params["mode"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
+        
+        if params["mode"] == "MEA":
+            callGrumpyMEA(params["inputDirectory"], params['outputDirectory'], params["force"], params["apikey"], params["apiType"], params["gptModel"], hidden=params["hidden"])
+
     else:
         outfile = open(outfileName, "w")
         outfile.write("API key file was not provided or not accessible, GrumPy's evaluation cannot be performed.")
