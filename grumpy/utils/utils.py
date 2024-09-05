@@ -69,7 +69,7 @@ def load_template(protocol, folder="templates"):
     str
         The content of the loaded template file.
     """
-    file_path = os.path.join(os.path.dirname(Path( __file__ ).absolute()), "..", "..", folder, f"{protocol}.txt")
+    file_path = os.path.join(os.path.dirname(Path( __file__ ).absolute()), "..", "..", folder, f"qc.{protocol}.txt")
     
     with open(file_path, 'r') as file:
         content = file.read()
