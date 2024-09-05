@@ -15,7 +15,7 @@ def pandas_agent(uploaded_file):
     df = df[~df.iloc[:, 0].str.contains('-')]
 
     agent = create_pandas_dataframe_agent(
-        ChatOpenAI(temperature=0, model="gpt-4o-mini", api_key=""),
+        ChatOpenAI(temperature=0, model=st.session_state["model"] , api_key= st.session_state["api_key"], base_url=st.session_state["base_url"]),
         df,
         verbose=True,
         allow_dangerous_code=True,

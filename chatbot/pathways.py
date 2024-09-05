@@ -45,8 +45,8 @@ if uploaded_file:
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            response = client.chat.completions.create(
-                model=st.session_state["openai_model"],
+            response = st.session_state["client"].chat.completions.create(
+                model=st.session_state["model"],
                 messages=[
                     {"role": m["role"], "content": m["content"]}
                     for m in st.session_state.messages

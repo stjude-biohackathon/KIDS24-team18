@@ -15,7 +15,7 @@ st.set_page_config(
 # col1, col2 = st.columns([1, 2])
 st.sidebar.image("templates/Grumpy_logo_250x250.png", caption="Grumpy")
 st.title("Grumpy")
-st.write("Grumpy (Generative Research Utility Model in Python) is a tool designed to conduct Biological Context Analysis (BCA). It utilizes Large Language Models (LLMs) such as OpenAI's GPT-4 (St. Jude Dedicated Instance) or other models like Llama from Meta.")
+st.markdown("Hi :wave: I'm Grumpy (Generative Research Utility Model in Python). I'm designed to conduct Biological Context Analysis (BCA) utilizing Large Language Models (LLMs) such as OpenAI's GPT-4o-mini or other open-source models like Llama3.1 from Meta.")
 
 
 @st.cache_data
@@ -59,10 +59,13 @@ st.session_state["model"] = st.sidebar.selectbox(
 )
 
 if st.session_state["model"] in ["gpt-4o", "gpt-4o-mini"]:
-    password = st.sidebar.text_input("Paste you OpenAI API key here: ", "sk-xxxxxxx", type = "password")
+    st.session_state["api_key"] = st.sidebar.text_input("Paste you OpenAI API key here: ", "sk-xxxxxxx", type = "password")
+    st.session_state["base_url"] = "https://api.openai.com/v1"
     st.session_state["client"] = OpenAI(api_key=password)
 else:
-    st.session_state["client"] = OpenAI(api_key='ollama', base_url = 'http://localhost:11434/v1')
+    st.session_state["api_key"] = 'ollama'
+    st.session_state["base_url"] = "http://localhost:11434/v1"
+    st.session_state["client"] = OpenAI(api_key=st.session_state["password"], base_url = st.session_state["base_url"])
 
 sidebar_links()
 
