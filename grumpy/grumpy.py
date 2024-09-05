@@ -54,6 +54,10 @@ if showLoadingTimes:
     print(f"Loading: `from math import ceil` took {datetime.now()-start}")
 
     start = datetime.now()
+    from pathlib import Path
+    print(f"Loading: `from pathlib import Path` took {datetime.now()-start}")
+
+    start = datetime.now()
     from utils.logger import CustomFormatter
     from utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
     from utils.utils import id_generator, load_template, str2bool, caesar_cipher
@@ -67,6 +71,7 @@ if showLoadingTimes:
     start = datetime.now()
     import datetime
     print(f"Loading: `import datetime` took {datetime.datetime.now()-start}")
+
 
 else:
 
@@ -102,26 +107,126 @@ def parseArgs():
     lgr.info("Command used to run the program: python {}".format(' '.join(str(x) for x in argv)))
 
     parser = argparse.ArgumentParser()
-    requiredParams = parser.add_argument_group("Required parameters")
-    requiredParams.add_argument("-p", "--protocol", help="What protocol is to be considered? Currently for the standard reports, the 'cutrun' and 'chip' are supported. For the GSEA, the 'gsea', which stands is supported, which will search for the 'gseapy.gene_set.prerank.report.filtered.csv' file in the directory specified in '-i' flag (for classic prerank-GSEApy run), or will analyze the txt file with a list of enriched pathways, if such txt is provided to the '-i' flag instead of the directory to the GSEApy results folder.", action="store", type=str, required=True, dest="protocol", choices = ['cutrun', 'chip', 'gsea'])
 
-    optionalParams = parser.add_argument_group("Optional parameters")
-    optionalParams.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file (for GSEA paths). By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
-    optionalParams.add_argument("-o", "--outputDirectory", help="The output directory where the results of the GrumPy's evaluation will be stored. By default='./'.", default='./', action="store", type=str, required=False, dest="outputDirectory")
-    optionalParams.add_argument("-r", "--reportType", help="the type of the report to be parsed, currently only 'std' is availible, which stands for standard report. By default='auto', which will set the actual value to 'std' if 'chip' or 'cutrun' is set in '-p' flag, or if the 'gsea' is set in '-p' flag, then it the value will be set to 'gsealist' if the list of pathways was supplied to '-i' flag, or it will be set to 'gseareport' if the '-i' flag pointed to the directory with the GSEApy report. Set to 'decode' and point '-i' to the previous output report from Grumpy to convert HTML to TXT for debugging purposes.", default='auto', action="store", type=str, required=False, dest="reportType", choices = ['auto', 'std', 'gsealist', 'gseareport', 'decode'])
-    optionalParams.add_argument("-f", "--force", help="If set to True, the program wil overwrite the existing GPT-based evaluation files. By default = False.", action="store", type=str2bool, required=False, dest="force", default=False)
-    optionalParams.add_argument("--context", help="Either full path to the text file with the description (recommended), or the description given as the text in quotes. Describe the biological context of the analysis. When present, it will be taken into account while generating the summary. Try to be brief with the description. By default = 'ignore', which will basically ignore the user-defined context and provide more generic assesment. For STDreps, in most cases 'ignore' is sufficient, because QC should be independent from context (unless for example we expect no peaks in one sample and we wish to emphasize that). Otherwise, for GSEA, its highly advisable to have some biological context description provided.", default="ignore", action="store", type=str, required=False, dest="context")
-    optionalParams.add_argument("--species", help="[GSEA specific parameter] Define the species which information will be used to try to correctly identify the reference external links to all recognized MSigDB pathways. By default='human_mouse', which is used to provide the broadest spectrum, including links to all known MSigDB signatures from both human and mice, with the priority toward the human descriptions, thus if you did use the mice data, please make sure to change the setting to ppint to 'mouse' specifically. Specify as 'other' for other species, custom gene sets or if you simply wish to skip the attempt to link the pathways to external reference all together.", default="human_mouse", action="store", type=str, required=False, dest="species", choices=["human", "mouse", "human_mouse", "other"])
-    optionalParams.add_argument("--outfilesPrefix", help="The prefix for the output files. By default = 'grumpy'.", default="grumpy", action="store", type=str, required=False, dest="outfilesPrefix")
-    optionalParams.add_argument("--hidden", help="If set to True, the output files will be hidden (i.e. dot will prefix the output files). By default = True.", action="store", type=str2bool, required=False, dest="hidden", default=True)
+    # Common parser for the shared arguments
+    common_parser = argparse.ArgumentParser(add_help=False)
+    common_parser.add_argument("-o", "--outputDirectory", help="The output directory where the results of the GrumPy's evaluation will be stored. By default='./'.", default='./', action="store", type=str, required=False, dest="outputDirectory")
+    common_parser.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file. By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
+    common_parser.add_argument("-f", "--force", help="If set to True, the program wil overwrite the existing GPT-based evaluation files. By default = True.", action="store", type=str2bool, required=False, dest="force", default=True)
+    common_parser.add_argument("--outfilesPrefix", help="The prefix for the output files. By default = 'grumpy'.", default="grumpy", action="store", type=str, required=False, dest="outfilesPrefix")
+    common_parser.add_argument("--hidden", help="If set to True, the output files will be hidden (i.e. dot will prefix the output files). By default = True.", action="store", type=str2bool, required=False, dest="hidden", default=False)
+    common_parser.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    common_parser.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='RECOMMENDED', which sets it to 'openai'.", default="RECOMMENDED", action="store", type=str, required=False, dest="apiType", choices=['RECOMMENDED', 'azure', 'openai', 'ollama'])
+    common_parser.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='RECOMMENDED', which will set it to 'gpt-3.5-turbo' - the most applicable here.", default="RECOMMENDED", action="store", type=str, required=False, dest="gptModel", choices=['RECOMMENDED', 'GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
 
-    apiParams = parser.add_argument_group("Optional GPT-4 API parameters")
-    apiParams.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
-    apiParams.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
-    apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
+
+    subparsers = parser.add_subparsers(help='Availible modes/tools/modules', dest='mode')
+
+    ### QC Parser for Automapper and standard reports.
+    qcParser = subparsers.add_parser('QC', help='Run evaluation of the Quality Control (QC) for standard report or Automapper output/summary QC table.', parents=[common_parser])
+    
+    requiredParams_qc = qcParser.add_argument_group('REQUIRED QC parameters')
+    requiredParams_qc.add_argument("-p", "--protocol", help="What protocol is to be considered? if you have protocol not listed, use 'other' and add a name of the protocol in the -n flag.", action="store", type=str, required=True, dest="protocol", choices = ['cutandrun', 'chipseq', 'atacseq', 'other'])
+    
+    optionalParams_qc = qcParser.add_argument_group("Optional QC parameters")
+    # optionalParams_qc.add_argument("-o", "--outputDirectory", help="The output directory where the results of the GrumPy's evaluation will be stored. By default='./'.", default='./', action="store", type=str, required=False, dest="outputDirectory")
+    # optionalParams_qc.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file. By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
+    # # requiredParams_qc.add_argument("-r", "--reportType", help="the type of the report to be parsed, currently only 'std' is availible, which stands for standard report. By default='auto', which will set the actual value to 'std' if 'chip' or 'cutrun' is set in '-p' flag, or if the 'gsea' is set in '-p' flag, then it the value will be set to 'gsealist' if the list of pathways was supplied to '-i' flag, or it will be set to 'gseareport' if the '-i' flag pointed to the directory with the GSEApy report. Set to 'decode' and point '-i' to the previous output report from Grumpy to convert HTML to TXT for debugging purposes.", default='auto', action="store", type=str, required=False, dest="reportType", choices = ['auto', 'std', 'gsealist', 'gseareport', 'decode'])
+    # optionalParams_qc.add_argument("-f", "--force", help="If set to True, the program wil overwrite the existing GPT-based evaluation files. By default = False.", action="store", type=str2bool, required=False, dest="force", default=False)
+    optionalParams_qc.add_argument("-n", "--protocolFullName", help="If you specified the 'protocol' (-p) as 'other', you should add here what the type of protocol we deal with here, like for example Hi-C, which will help the LLM to establish the best set of reference guidelines to analyze it. By default = 'unspecified'.", action="store", type=str, required=False, dest="protocolFullName", default='unspecified')
+    # optionalParams_qc.add_argument("--outfilesPrefix", help="The prefix for the output files. By default = 'grumpy'.", default="grumpy", action="store", type=str, required=False, dest="outfilesPrefix")
+    # optionalParams_qc.add_argument("--hidden", help="If set to True, the output files will be hidden (i.e. dot will prefix the output files). By default = True.", action="store", type=str2bool, required=False, dest="hidden", default=False)
+    # optionalParams_qc.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    # optionalParams_qc.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='RECOMMENDED', which sets it to 'openai'.", default="RECOMMENDED", action="store", type=str, required=False, dest="apiType", choices=['RECOMMENDED', 'azure', 'openai', 'ollama'])
+    # optionalParams_qc.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='RECOMMENDED', which will set it to 'gpt-3.5-turbo' - the most applicable here.", default="RECOMMENDED", action="store", type=str, required=False, dest="gptModel", choices=['RECOMMENDED', 'GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
+
+
+    ### PE Parser for Automapper and standard reports.
+    peParser = subparsers.add_parser('PE', help='Run evaluation of the Pathway Enrichment (PE) analyses for either GSEA results, or typical Pathway Enrichment.', parents=[common_parser])
+    
+    requiredParams_pe = peParser.add_argument_group('REQUIRED PE parameters')
+    requiredParams_pe.add_argument("-p", "--protocol", help="What protocol is to be considered? if you have protocol not listed, use 'other' and add a name of the protocol in the -n flag.", action="store", type=str, required=True, dest="protocol", choices = ['cutandrun', 'chipseq', 'atacseq', 'other'])
+    
+    optionalParams_pe = peParser.add_argument_group("Optional PE parameters")
+    # optionalParams_pe.add_argument("-o", "--outputDirectory", help="The output directory where the results of the GrumPy's evaluation will be stored. By default='./'.", default='./', action="store", type=str, required=False, dest="outputDirectory")
+    # optionalParams_pe.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file. By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
+    requiredParams_qc.add_argument("-r", "--reportType", help="the type of the report to be parsed, currently only 'std' is availible, which stands for standard report. By default='auto', which will set the actual value to 'std' if 'chip' or 'cutrun' is set in '-p' flag, or if the 'gsea' is set in '-p' flag, then it the value will be set to 'gsealist' if the list of pathways was supplied to '-i' flag, or it will be set to 'gseareport' if the '-i' flag pointed to the directory with the GSEApy report. Set to 'decode' and point '-i' to the previous output report from Grumpy to convert HTML to TXT for debugging purposes.", default='auto', action="store", type=str, required=False, dest="reportType", choices = ['auto', 'std', 'gsealist', 'gseareport', 'decode'])
+    # optionalParams_pe.add_argument("-f", "--force", help="If set to True, the program wil overwrite the existing GPT-based evaluation files. By default = False.", action="store", type=str2bool, required=False, dest="force", default=False)
+    # optionalParams_pe.add_argument("-n", "--protocolFullName", help="If you specified the 'protocol' (-p) as 'other', you should add here what the type of protocol we deal with here, like for example Hi-C, which will help the LLM to establish the best set of reference guidelines to analyze it. By default = 'unspecified'.", action="store", type=str, required=False, dest="force", default='unspecified')
+    # # optionalParams_pe.add_argument("--outfilesPrefix", help="The prefix for the output files. By default = 'grumpy'.", default="grumpy", action="store", type=str, required=False, dest="outfilesPrefix")
+    # optionalParams_pe.add_argument("--hidden", help="If set to True, the output files will be hidden (i.e. dot will prefix the output files). By default = True.", action="store", type=str2bool, required=False, dest="hidden", default=False)
+    optionalParams_pe.add_argument("--species", help="[GSEA specific parameter - not used for typical PE] Define the species which information will be used to try to correctly identify the reference external links to all recognized MSigDB pathways. By default='human_mouse', which is used to provide the broadest spectrum, including links to all known MSigDB signatures from both human and mice, with the priority toward the human descriptions, thus if you did use the mice data, please make sure to change the setting to ppint to 'mouse' specifically. Specify as 'other' for other species, custom gene sets or if you simply wish to skip the attempt to link the pathways to external reference all together.", default="human_mouse", action="store", type=str, required=False, dest="species", choices=["human", "mouse", "human_mouse", "other"])
+    # optionalParams_pe.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    # optionalParams_pe.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
+    # optionalParams_pe.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
+
+
+    ### MEA Parser for conversational evaluation.
+    meaParser = subparsers.add_parser('MEA', help='Run evaluation of the Motif Enrichment Analysis (MEA) for the standard reports from Homer tool.', parents=[common_parser])
+
+    optionalParams_mea = meaParser.add_argument_group("Optional MEA parameters")
+    # optionalParams_mea.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file. By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
+    # optionalParams_mea.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    # optionalParams_mea.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
+    # optionalParams_mea.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
+
+
+    ### DEG Parser for conversational evaluation.
+    degParser = subparsers.add_parser('DEG', help='Run evaluation of the Differentially Expressed Genes (DEG) for the typical DEG tables from tools such as limma, DEseq2 etc.', parents=[common_parser])
+
+    optionalParams_deg = degParser.add_argument_group("Optional DEG parameters")
+    # optionalParams_deg.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file. By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
+    # optionalParams_deg.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    # optionalParams_deg.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
+    # optionalParams_deg.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
+
+
+    ### DEG Parser for conversational evaluation.
+    dpkParser = subparsers.add_parser('DPK', help='Run evaluation of the Differentially Peaks (DPK), so either differentially binding regions from protocols like ChIP-seq or differentially accessible ones from protocols like ATAC-seq.', parents=[common_parser])
+
+    optionalParams_dpk = dpkParser.add_argument_group("Optional DEG parameters")
+    # optionalParams_dpk.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file. By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
+    # optionalParams_dpk.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    # optionalParams_dpk.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
+    # optionalParams_dpk.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
+
+
+    ### GrumpyChat Parser for conversational evaluation.
+    chatParser = subparsers.add_parser('chat', help='Nice chat with the Grumpy AI', parents=[common_parser])
+
+    optionalParams_chat = chatParser.add_argument_group("Optional Chat parameters")
+    # optionalParams_chat.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    # optionalParams_chat.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
+    # optionalParams_chat.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
+
+    
+    ### GrumpyChat Parser for conversational evaluation.
+    decodeParser = subparsers.add_parser('decode', help='Small tool to decode / extract the information from the HTML file.', parents=[common_parser])
+
+    
+
+
+
+    # requiredParams_qc.add_argument("-p", "--protocol", help="What protocol is to be considered? Currently for the standard reports, the 'cutrun' and 'chip' are supported. For the GSEA, the 'gsea', which stands is supported, which will search for the 'gseapy.gene_set.prerank.report.filtered.csv' file in the directory specified in '-i' flag (for classic prerank-GSEApy run), or will analyze the txt file with a list of enriched pathways, if such txt is provided to the '-i' flag instead of the directory to the GSEApy results folder.", action="store", type=str, required=True, dest="protocol", choices = ['cutrun', 'chip', 'gsea'])
+
+    # optionalParams = parser.add_argument_group("Optional parameters")
+    # optionalParams.add_argument("-i", "--inputDirectory", help="The input directory where the results of the protocol are stored or the path to the text file (for GSEA paths). By default='./'.", default='./', action="store", type=str, required=False, dest="inputDirectory")
+    # optionalParams.add_argument("-o", "--outputDirectory", help="The output directory where the results of the GrumPy's evaluation will be stored. By default='./'.", default='./', action="store", type=str, required=False, dest="outputDirectory")
+    # optionalParams.add_argument("-r", "--reportType", help="the type of the report to be parsed, currently only 'std' is availible, which stands for standard report. By default='auto', which will set the actual value to 'std' if 'chip' or 'cutrun' is set in '-p' flag, or if the 'gsea' is set in '-p' flag, then it the value will be set to 'gsealist' if the list of pathways was supplied to '-i' flag, or it will be set to 'gseareport' if the '-i' flag pointed to the directory with the GSEApy report. Set to 'decode' and point '-i' to the previous output report from Grumpy to convert HTML to TXT for debugging purposes.", default='auto', action="store", type=str, required=False, dest="reportType", choices = ['auto', 'std', 'gsealist', 'gseareport', 'decode'])
+    # optionalParams.add_argument("-f", "--force", help="If set to True, the program wil overwrite the existing GPT-based evaluation files. By default = False.", action="store", type=str2bool, required=False, dest="force", default=False)
+    # optionalParams.add_argument("--context", help="Either full path to the text file with the description (recommended), or the description given as the text in quotes. Describe the biological context of the analysis. When present, it will be taken into account while generating the summary. Try to be brief with the description. By default = 'ignore', which will basically ignore the user-defined context and provide more generic assesment. For STDreps, in most cases 'ignore' is sufficient, because QC should be independent from context (unless for example we expect no peaks in one sample and we wish to emphasize that). Otherwise, for GSEA, its highly advisable to have some biological context description provided.", default="ignore", action="store", type=str, required=False, dest="context")
+    # optionalParams.add_argument("--species", help="[GSEA specific parameter] Define the species which information will be used to try to correctly identify the reference external links to all recognized MSigDB pathways. By default='human_mouse', which is used to provide the broadest spectrum, including links to all known MSigDB signatures from both human and mice, with the priority toward the human descriptions, thus if you did use the mice data, please make sure to change the setting to ppint to 'mouse' specifically. Specify as 'other' for other species, custom gene sets or if you simply wish to skip the attempt to link the pathways to external reference all together.", default="human_mouse", action="store", type=str, required=False, dest="species", choices=["human", "mouse", "human_mouse", "other"])
+    # optionalParams.add_argument("--outfilesPrefix", help="The prefix for the output files. By default = 'grumpy'.", default="grumpy", action="store", type=str, required=False, dest="outfilesPrefix")
+    # optionalParams.add_argument("--hidden", help="If set to True, the output files will be hidden (i.e. dot will prefix the output files). By default = True.", action="store", type=str2bool, required=False, dest="hidden", default=True)
+
+    # apiParams = parser.add_argument_group("Optional GPT-4 API parameters")
+    # apiParams.add_argument("-k", "--apikey", help="Full path to the super-secret API-KEY file. By default = '/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key'.", default="/research_jude/rgs01_jude/groups/cab/projects/Control/common/cab_epi/APIKEY/key", action="store", type=str, required=False, dest="apikey")
+    # apiParams.add_argument("--apiType", help="Type of API, currently either 'openai' for direct linking with OpenAI, or 'azure' for the test st. Jude dedicated instance, those influence how the connection with API is established. By default='azure'.", default="azure", action="store", type=str, required=False, dest="apiType", choices=['azure', 'openai', 'ollama'])
+    # apiParams.add_argument("--gptModel", help="Type of the model, currently either 'GPT-4-32k-API' for the test st. Jude dedicated instance, or 'gpt-3.5-turbo' and 'gpt-4o' for the direct OpenAI connections. By default='gpt4o-api'.", default="gpt4o-api", action="store", type=str, required=False, dest="gptModel", choices=['GPT-4-32k-API', 'gpt-3.5-turbo', 'gpt-4o', 'gpt4o-api', 'llama3', 'meditron', 'medllama2', 'gpt-4o-mini'])
 
     params = vars(parser.parse_args())
 
+    lgr.info("Parsed arguments: {}".format(params))
     lgr.info("Protocol (--protocol flag): {}".format(params["protocol"]))
 
     errors = False
@@ -135,44 +240,56 @@ def parseArgs():
         errors = True
     lgr.info("Output directory (--outputDirectory flag): {}".format(params["outputDirectory"]))
 
-    if params["reportType"] == "auto":
-        lgr.info("Initially provided report type (--reportType flag): {}".format(params["reportType"]))
-        if params["protocol"] in ["cutrun", "chip"]:
-            params["reportType"] = "std"
-        elif params["protocol"] == "gsea":
+    if params["mode"] == "QC": # if params["reportType"] == "auto":
+        params["reportType"] = "std"
+        ### Get the list of *txt files within the "templates" of the scripts directory and add them as protocols:
+        protocolReferencesFound = ["other"]
+        for file in glob.glob(os.path.join(os.path.dirname(Path( __file__ ).absolute()), "..", "templates", "qc.*.txt")):
+            if len(os.path.basename(file).split(".")) == 3:
+                protocolReferencesFound.append(os.path.basename(file).split(".")[1])
+        if params["protocol"] in protocolReferencesFound:
+            lgr.info(f"Found the reference template for the '{params['protocol']}' protocol.")
+        else:
+            lgr.error(f"The reference template for the '{params['protocol']}' protocol was not found. Program was aborted.")
+            errors = True
+        if params["protocol"] == "other":
+            if params["protocolFullName"] == "unspecified":
+                lgr.error("The 'protocol' flag was set to 'other', but the 'protocolFullName' was not provided. Program was aborted.")
+                errors = True
+            else:
+                lgr.info("The 'protocol' flag was set to 'other', and seemingly valid 'protocolFullName' was provided as '{}'. Program will proceed with the evaluation.".format(params["protocolFullName"]))
+
+        if params["reportType"] == "std":
+            for subdir in ["Stats", "Peaks"]:
+                if not os.path.exists(os.path.join(params["inputDirectory"], subdir)):
+                    lgr.info("The classic STDreport '{}' should have '{}' subdirectory, to be analyzed as 'classicSTDrepDir', assumin input file is the directory with *report file from Automapper.".format(params["inputDirectory"], subdir))
+
+
+    if params["mode"] == "PE":
+        if params["protocol"] == "gsea":
             if os.path.isdir(params["inputDirectory"]):
                 params["reportType"] = "gseareport"
             else:
                 params["reportType"] = "gsealist"
 
-    if params["reportType"] == "std":
-        for subdir in ["Stats", "Peaks"]:
-            if not os.path.exists(os.path.join(params["inputDirectory"], subdir)):
-                lgr.info("The classic STDreport '{}' should have '{}' subdirectory, to be analyzed as 'classicSTDrepDir', assumin input file is the directory with *report file from Automapper.".format(params["inputDirectory"], subdir))
+        if params["reportType"] == "gseareport":
+            if not os.path.exists(os.path.join(params["inputDirectory"], "gseapy.gene_set.prerank.report.filtered.csv")):
+                lgr.error("The input directory '{}' should have 'gseapy.gene_set.prerank.report.filtered.csv' file, which does not exist. Program was aborted.".format(params["inputDirectory"]))
+                errors = True
 
+        if params["reportType"] == "gsealist":
+            if not os.path.exists(params["inputDirectory"]):
+                lgr.error("The input file with the list of pathways to be checked'{}' does not exist. Program was aborted.".format(params["inputDirectory"]))
+                errors = True
 
-    elif params["reportType"] == "gseareport":
-        if not os.path.exists(os.path.join(params["inputDirectory"], "gseapy.gene_set.prerank.report.filtered.csv")):
-            lgr.error("The input directory '{}' should have 'gseapy.gene_set.prerank.report.filtered.csv' file, which does not exist. Program was aborted.".format(params["inputDirectory"]))
-            errors = True
+    # lgr.info("Report type (--reportType flag): {}".format(params["reportType"]))
 
-    elif params["reportType"] == "gsealist":
-        if not os.path.exists(params["inputDirectory"]):
-            lgr.error("The input file with the list of pathways to be checked'{}' does not exist. Program was aborted.".format(params["inputDirectory"]))
-            errors = True
-
-    lgr.info("Report type (--reportType flag): {}".format(params["reportType"]))
-
-    if params["reportType"] == "decode":
-        if params["protocol"] == "gsea":
-              if params["inputDirectory"].endswith(".html"):
-                  pass
-              else:
-                  lgr.error(f"The input file '{params['inputDirectory']}' should be an HTML file when working in 'decode' mode. Program was aborted.")
-                  errors = True
+    if params["mode"] == "decode":
+        if params["inputDirectory"].endswith(".html"):
+            pass
         else:
-            lgr.error("The 'decode' option is only available for the GSEA protocol. Program was aborted.")
-            raise Exception("The 'decode' option is currently only available for the GSEA protocol.")
+            lgr.error(f"The input file '{params['inputDirectory']}' should be an HTML file when working in 'decode' mode. Program was aborted.")
+            errors = True
     else:
         global tiktoken
         global AzureOpenAI
@@ -217,26 +334,31 @@ def parseArgs():
 
             import numpy as np
 
-    lgr.info("Force calculating evaluation (--force flag): {}".format(params["force"]))
+        params["keyFilePresent"] = True
+        if not os.path.exists(params["apikey"]):
+            lgr.error("The API-KEY file '{}' does not exist. Program was aborted.".format(params["apikey"]))
+            params["keyFilePresent"] = False
+        # lgr.info("API-KEY file (--apikey flag): {}".format(params["apikey"]))
 
-    params["keyFilePresent"] = True
-    if not os.path.exists(params["apikey"]):
-        lgr.error("The API-KEY file '{}' does not exist. Program was aborted.".format(params["apikey"]))
-        params["keyFilePresent"] = False
-    # lgr.info("API-KEY file (--apikey flag): {}".format(params["apikey"]))
+        # check if context is a file or a string:
+        if "context" in params:
+            if os.path.exists(params["context"]):
+                with open(params["context"], 'r') as file:
+                    params["context"] = file.read()
+            else:
+                params["context"] = params["context"]
 
-    # check if context is a file or a string:
-    if os.path.exists(params["context"]):
-        with open(params["context"], 'r') as file:
-            params["context"] = file.read()
-    else:
-        params["context"] = params["context"]
-    lgr.info("Context (--context flag): {}".format(params["context"]))
-
-    lgr.info("Output files prefix (--outfilesPrefix flag): {}".format(params["outfilesPrefix"]))
-    lgr.info("Hidden output files (--hidden flag): {}".format(params["hidden"]))
-
-    lgr.info("Species (--species flag): {}".format(params["species"]))
+    if "gptModel" in params:
+        if params["gptModel"] == "RECOMMENDED" and params['mode'] == "QC":
+            params["gptModel"] = "gpt-3.5-turbo"
+        elif params["gptModel"] == "RECOMMENDED" and params['mode'] == "chat":
+            params["gptModel"] = "llama3"
+    
+    if "apiType" in params:
+        if params["apiType"] == "RECOMMENDED" and params['mode'] == "QC":
+            params["apiType"] = "openai"
+        elif params["apiType"] == "RECOMMENDED" and params['mode'] == "chat":
+            params["apiType"] = "ollama"
 
     if errors:
         lgr.critical("Errors found while parsing parameters -- see more details above. Program was aborted.")
@@ -245,7 +367,7 @@ def parseArgs():
     return params
 
 
-def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
+def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
                   outfileNameShort, hidden=False):
     """
     Function to call the Grumpy AI for generating a standard report based on a metafile. 
@@ -258,6 +380,8 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
         Path to the metafile containing data for QC evaluation.
     protocol : str
         Type of protocol used (e.g., 'cutrun', 'chip'). Determines the basic role for Grumpy.
+    protocolFullName : str
+        Full name of the protocol used. Required if 'protocol' is set to 'other'.
     outfilesPrefix : str
         Prefix for the output files.
     force : bool
@@ -295,24 +419,11 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
         lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileNameShort, movedOutfileName)
     
     ### Define descriptions for the basic role for Grumpy based on the protocol
-    if protocol == "cutrun":
-        basicRole = load_template("cutrun")
-    elif protocol == "chip":
-        basicRole = load_template("chip")
-    else:
-        basicRole = ""
+    basicRole = load_template(protocol)
+    if protocol == "other":
+        basicRole = f"First and foremost, you are here going to analyze the data from the '{protocolFullName}' protocol. The following are the general guidelines for the analysis that you have to run, without any specific protocol in mind, so please adjust accordingly to the procol specified here as '{protocolFullName}'."
 
-    ### Define the role for Grumpy
     grumpyRole = f"""
-    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as detailed as needed in your evaluation.
-    Moreover, please be as critique, as skeptical and as realistic as possible, I want you to be able to provide focus on the low-quality aspects of the data for the human recipient of your message. If you don't find any issues with the data, don't make them up, instead just please write that it all rather looks good etc.
-
-    Finally, when you mention the actual sample names, always put two vertical bars (i.e. "||") before and after the name, e.g. ||123451_H3K27Ac_rep1||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
-
-    {basicRole}
-    """
-
-    grumpyRoleShorter = f"""
     You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words). 
     Moreover, please be as critique, as skeptical and as realistic as possible, I want you to be able to provide focus on the low-quality aspects of the data for the human recipient of your message. If you don't find any issues with the data, don't make them up, instead just please write that it all rather looks good etc.
 
@@ -358,7 +469,7 @@ def callGrumpySTD(metaFile, protocol, outfilesPrefix, force, keyFile, apiType, g
 
     ### Connect to Grumpy AI and generate the reports
     grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
-    grumpyConnect(keyFile, apiType, gptModel, grumpyRoleShorter, QC_table, outfileNameShort)
+    # grumpyConnect(keyFile, apiType, gptModel, grumpyRoleShorter, QC_table, outfileNameShort)
 
 def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=28000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
@@ -401,7 +512,7 @@ def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, ma
     # Initialize the tokenizer
     tokenizer = tiktoken.get_encoding("cl100k_base")
     total_tokens = sum(len(tokenizer.encode(message['content'])) for message in message_text)
-    lgr.info(f"Total tokens in the prompt: {total_tokens}")
+    lgr.info(f"Total tokens in the prompt: {total_tokens}; maxTok for model is {maxTok}")
     requestedCompletionTokens = min([maxTok - total_tokens, 4096]) # some references to 4k: https://community.openai.com/t/how-the-max-tokens-are-considered/313514/4 and https://community.openai.com/t/max-tokens-chat-completion-gpt4o/758066
 
     if requestedCompletionTokens < 0:
@@ -738,7 +849,7 @@ def main():
     if params["keyFilePresent"]:
         if params["reportType"] == 'std':
             metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], params['outputDirectory'], hidden=params["hidden"])
-            callGrumpySTD(metaFile, params["protocol"], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
+            callGrumpySTD(metaFile, params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
         elif params["reportType"] in ['gsealist', 'gseareport']:
             callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
         elif params["reportType"] == 'decode':
