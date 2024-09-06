@@ -20,8 +20,6 @@ from grumpy.utils.compression import compress_text, decompress_text
 from grumpy.utils.peak_analysis import determinePkCalling, getPeakNumber
 from grumpy.utils.report_parsing import parseStandardRepDir
 
-from openai import AzureOpenAI, AuthenticationError, OpenAI
-
 
 
 def callGrumpyDPKQC(inputDirectory, outputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, hidden=False):
@@ -30,20 +28,20 @@ def callGrumpyDPKQC(inputDirectory, outputDirectory, outfilesPrefix, force, keyF
 
 
     grumpyRole=f"""
-In this task, you are focusing on assessing if the biological replicates have high reproducibility for each group. Your goal is to report the biological replicates that have low replicates so that biological scientists can have further investigation. 
-Moreover, please be relaxed, for example, if replicate 1 has less than 60% peaks of replicate 2, then these two replicates have low reproducibility. But be as realistic as possible in this task, dont make things up. 
+        In this task, you are focusing on assessing if the biological replicates have high reproducibility for each group. Your goal is to report the biological replicates that have low replicates so that biological scientists can have further investigation. 
+        Moreover, please be relaxed, for example, if replicate 1 has less than 60% peaks of replicate 2, then these two replicates have low reproducibility. But be as realistic as possible in this task, dont make things up. 
 
-Also, you don't need to give any reason why this happen when the replicates have low reproducibility. 
-When you find replicates that have low reproducibilty, try to separate report them in a format below: 
-1. **WT_rep1 & WT_rep2 have high reproducibility:**
-   - WT_rep1 has 184060 peaks.
-   - WT_rep2 has 190000 peaks.
-   - Warning: These two replicates need further investigation. 
-2. **KO_rep1 & KO_rep2 have low reproducibility:**
-   - WT_rep1 has 74060 peaks.
-   - WT_rep2 has 20000 peaks.
-   - Warning: These two replicates need further investigation.
-    """
+        Also, you don't need to give any reason why this happen when the replicates have low reproducibility. 
+        When you find replicates that have low reproducibilty, try to separate report them in a format below: 
+        1. **WT_rep1 & WT_rep2 have high reproducibility:**
+        - WT_rep1 has 184060 peaks.
+        - WT_rep2 has 190000 peaks.
+        - Warning: These two replicates need further investigation. 
+        2. **KO_rep1 & KO_rep2 have low reproducibility:**
+        - WT_rep1 has 74060 peaks.
+        - WT_rep2 has 20000 peaks.
+        - Warning: These two replicates need further investigation.
+            """
     
     allReproStats = pd.read_table(glob.glob(inputDirectory + "/reproduciblePeakCounts/*.allReproStats.tsv")[0])
     allReproStats_table = allReproStats.to_csv(index = False, sep = "\t")
@@ -58,7 +56,7 @@ When you find replicates that have low reproducibilty, try to separate report th
 
 def callGrumpyDPKExtract(inputDirectory, outputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, context, hidden=False):
     
-    from connect import grumpyConnect
+    from grumpy.connect import grumpyConnect
     ### load the basicRole for the Grumpy for differentail peak analysis
     basicRole = load_template("dpk")
 
@@ -77,17 +75,17 @@ def callGrumpyDPKExtract(inputDirectory, outputDirectory, outfilesPrefix, force,
     ```"""
 
     grumpyRole = f"""
-You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. 
-Your goal in this task is to help people check if the differential peak analysis work as expected, as well as help people find out peaks that are relavant to specific biological process.
-More importantly, I want you to be as critique, realistic as possible. 
-If the contextDescription is not 'ignore', I also need you to describe what biological process that I am interested in at the begining of the report. 
-Finally, when you mention regions, always put two vertical bars (i.e. "||") before and after the region, e.g. ||chr1:12345-12867||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
+        You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. 
+        Your goal in this task is to help people check if the differential peak analysis work as expected, as well as help people find out peaks that are relavant to specific biological process.
+        More importantly, I want you to be as critique, realistic as possible. 
+        If the contextDescription is not 'ignore', I also need you to describe what biological process that I am interested in at the begining of the report. 
+        Finally, when you mention regions, always put two vertical bars (i.e. "||") before and after the region, e.g. ||chr1:12345-12867||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
 
---------
-{basicRole}
---------
-{contextDescription}
-    """
+        --------
+        {basicRole}
+        --------
+        {contextDescription}
+            """
 
     comparisonFiles = glob.glob(inputDirectory + "/supplementaryFiles/*.vout.anno.Ranks.tsv")
     print(comparisonFiles)
