@@ -4,8 +4,4 @@ pandas>=1.5.0
 pybedtools>=0.9.0
 numpy>=1.22.0
 jinja2
-<<<<<<< HEAD
-gseapy==1.12
-=======
-gseapy==1.12
->>>>>>> 77220ba (Add gseapy version that compiles.)
+gseapy==1.1.2
