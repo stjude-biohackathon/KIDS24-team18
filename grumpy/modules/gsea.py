@@ -1,6 +1,8 @@
 import logging
 import os
 import re
+import pkg_resources
+import inspect
 
 import gseapy as gp
 import matplotlib.pyplot as plt
@@ -8,9 +10,9 @@ import numpy as np
 import pandas as pd
 from utils.html_processing import (format_html, load_html_template,
                                    write_html_file)
-from version import __version__
 
-from grumpy import grumpyConnect
+from grumpy.connect import grumpyConnect
+from grumpy.version import __version__
 
 
 class GrumpyGSEA:
@@ -102,7 +104,7 @@ class GrumpyGSEA:
         return self.results
 
 
-    def call_sanity_check(self, input_file, input_type, referencePathwaysList,
+    def call_sanity_check(self, input_file, inputType, referencePathwaysList,
                           grumpyEvaluationFile, pattern=r'\|\|([^|]+)\|\|'):
         """
         Performs a sanity check by comparing the results to a reference pathway list or gene list.
@@ -111,8 +113,8 @@ class GrumpyGSEA:
         -----------
         input_file : str
             The path to the file containing either gene list, deseq2 output, or pathways list.
-        input_type : str
-            The type of input provided in the input_file. Should be 'genes', 'deseq2output', or 'pathways'.
+        inputType : str
+            The type of input provided in the input_file. Should be 'genes', 'deseq2', or 'pathways'.
         referencePathwaysList : list
             The list of reference pathways for comparison.
         grumpyEvaluationFile : str
@@ -123,27 +125,27 @@ class GrumpyGSEA:
         lgr = logging.getLogger("sanity_check")
 
         # Load input file based on the input type
-        if input_type == 'genes':
+        if inputType == 'genes':
             with open(input_file, 'r') as file:
                 genes_list = [line.strip() for line in file.readlines()]
                 lgr.info(f"Loaded gene list with {len(genes_list)} genes.")
             comparison_list = genes_list
 
-        elif input_type == 'deseq2results':
+        elif inputType == 'deseq2':
             # Assuming deseq2 output is a CSV or TSV file
             deseq2_data = pd.read_csv(input_file, sep='\t' if input_file.endswith('.tsv') else ',')
             genes_list = deseq2_data['gene'].tolist()
             lgr.info(f"Loaded DESeq2 output with {len(genes_list)} genes.")
             comparison_list = genes_list
 
-        elif input_type == 'pathways':
+        elif inputType == 'pathways':
             with open(input_file, 'r') as file:
                 pathways_list = [line.strip() for line in file.readlines()]
                 lgr.info(f"Loaded pathways list with {len(pathways_list)} pathways.")
             referencePathwaysList = pathways_list
 
         else:
-            raise ValueError("Invalid input_type. Must be one of 'genesList', 'deseq2output', or 'pathwaysList'.")
+            raise ValueError("Invalid inputType. Must be one of 'genesList', 'deseq2output', or 'pathwaysList'.")
 
         # Sanity check logic
         with open(grumpyEvaluationFile, 'r') as file:
@@ -167,9 +169,31 @@ class GrumpyGSEA:
             else:
                 file.write("All pathways mentioned in the Grumpy evaluation were present in the reference list.\n")
 
-    def call_reporter(self, input_type, referencePathwaysList, species, grumpyEvaluationFile_precise, 
-                      grumpyEvaluationFile_balanced, grumpyEvaluationFile_creative, outfileNamePrefix, 
-                      contextDescription="", pattern=r'\|\|([^|]+)\|\|'):
+    def get_msigdb(self, species):
+        # Get the collection of the external signature links from MSigDB:
+        human_msigdb = pkg_resources.resource_filename('grumpy.data', 'MSigDB/msigdb.v2023.2.Hs.links.tsv')
+        mouse_msigdb = pkg_resources.resource_filename('grumpy.data', 'MSigDB/msigdb.v2023.2.Mm.links.tsv')
+
+        externalSignatureLinks = {}
+        refSignFiles = []
+        if "human" in species:
+            refSignFiles.append(human_msigdb)
+        if "mouse" in species:
+            refSignFiles.append(mouse_msigdb)
+
+        for refSignFile in refSignFiles:
+            with open(refSignFile, 'r') as file:
+                for line in file:
+                    pathway, link = line.strip().split("\t")
+                    if pathway not in externalSignatureLinks:
+                        externalSignatureLinks[pathway] = link
+        
+        return externalSignatureLinks
+
+    def call_reporter(self, inputType, referencePathwaysList, species, grumpyEvaluationFile_precise, 
+                      grumpyEvaluationFile_balanced, grumpyEvaluationFile_creative, 
+                      outfileName, grumpyRole, pathwaysList, contextDescription, 
+                      outfileNamePrefix, pattern=r'\|\|([^|]+)\|\|'):
         """
         Generates a report based on the Grumpy evaluations and enrichr results.
 
@@ -188,17 +212,26 @@ class GrumpyGSEA:
         pattern : str, optional
             Regex pattern to extract pathway names from the evaluation files.
         """
-        lgr = logging.getLogger("reporter")
+        lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
+        scriptsDir = os.path.dirname(os.path.realpath(__file__))
+
+        checkIcon = """<i class='bi bi-check-lg' style='color: green;' title='Verified: gene signature name present in input list'></i>"""
+        warningIcon = """<i class='bi bi-exclamation-triangle' style='color: orange;' title='Warning: sanity check was unable to verify the presence of this gene signature in your original input - please proceed with caution'></i>"""
+
+        # Read in the Grumpy evaluation file(s)
         processedEvals = {}
 
         # Load input file based on the input type
-        if input_type == 'genes':
+        if inputType == 'genes':
             pass
 
-        elif input_type == 'deseq2results':
+        elif inputType == 'deseq2results':
             pass
 
-        elif input_type == 'pathways':
+        elif inputType == 'pathways':
+            externalSignatureLinks = self.get_msigdb(species=species)
+            lgr.info(f"External '{species}' signature links were loaded for {len(externalSignatureLinks)} pathways.")
+
             for evalType, grumpyEvaluationFile in zip(["precise", "balanced", "creative"],
                                                     [grumpyEvaluationFile_precise, grumpyEvaluationFile_balanced, grumpyEvaluationFile_creative]):
                 with open(grumpyEvaluationFile, 'r') as file:
@@ -211,25 +244,63 @@ class GrumpyGSEA:
 
                 if mismatchedPathways:
                     lgr.warning(f"The following pathways were mentioned in the Grumpy evaluation, but were not present in the reference list: {mismatchedPathways}")
+                for foundSignature in matches:
+                    if foundSignature in referencePathwaysList:
+                        icon = checkIcon
+                    else:
+                        icon = warningIcon
 
-            # Generating final report
-            outfileName = f"{outfileNamePrefix}.evaluation.html"
-            html_template_path = "templates/grumpy_template.html"
-            base_html = load_html_template(html_template_path)
+                    if foundSignature in externalSignatureLinks:
+                        linkFront = f"<a href='{externalSignatureLinks[foundSignature]}' target='_blank'>"
+                        linkBack = "</a>"
+                    else:
+                        linkFront = ""
+                        linkBack = ""
 
-            replacements = {
-                "version": __version__,
-                "context_description": contextDescription,
-                "outfile_name_prefix": outfileNamePrefix,
-                "processedEvals": processedEvals  
-            }
+                    grumpyEvaluation = grumpyEvaluation.replace(f"||{foundSignature}||", f"{linkFront}{foundSignature} {icon}{linkBack}")
 
-            formatted_html = format_html(html_content=base_html, replacements=replacements)
-            write_html_file(outfileName, formatted_html)
+                grumpyEvaluation += f"""
+                    <hr>
+                    <h6 class='text-grey'>Sanity Check Summary</h6>
+                    <p class='text-grey' class='small-font'>The Grumpy evaluation contained {len(set(matches))} pathways."""
+                if len(mismatchedPathways) > 0:
+                    grumpyEvaluation += f"<br>The following pathways were mentioned in the Grumpy evaluation, but were not present in the reference list: {mismatchedPathways}"
+                else:
+                    grumpyEvaluation += "<br>All pathways mentioned in the Grumpy evaluation were present in the reference list."
+                grumpyEvaluation += f"""
+                    <br>In addition:
+                    <ul class='text-grey' class='small-font'>
+                    <li>If any of the pathways were not present in the reference list, the following warning was displayed: {warningIcon}</li>
+                    <li>If any of the pathways were present in the reference list, the following checkmark was displayed: {checkIcon}</li>
+                    <li>If neither of the above icons is displayed next to pathway name, it means that the sanity-check code was unable to find it - its highly recommended to check those manually.</li>
+                    <li>If any of the pathways were present in the external signature links, the pathway name was hyperlinked to the external source.</li>
+                    <li>If any of the pathways were not present in the external signature links, the pathway name was not hyperlinked, but it doesnt mean its wrong, but rather that we were unable to find a reference link to the most up to date version of the MSigDB for that signature.</li>
+                    </ul>
+                    </p>
+                    """
 
-            lgr.info(f"The Grumpy report was saved to the file '{outfileName}'.")
+                processedEvals[evalType] = grumpyEvaluation
+                
+        # Generating final report
+        outfileName = f"{outfileNamePrefix}.evaluation.html"
+        html_template_path = "templates/grumpy_template.html"
+        base_html = load_html_template(html_template_path)
 
-    def run_grumpy_mode(mode, keyFile, apiType, gptModel, grumpyRole, pathwaysList, outfileName, max_tokens, hidden, temperature, top_p):
+        replacements = {
+            "version": __version__,
+            "context_description": contextDescription,
+            "outfile_name_prefix": outfileNamePrefix,
+            "processedEvals": processedEvals  
+        }
+
+        formatted_html = format_html(html_content=base_html, replacements=replacements)
+        write_html_file(outfileName, formatted_html)
+
+        lgr.info(f"The Grumpy report was saved to the file '{outfileName}'.")
+
+    def run_grumpy_mode(self, mode, keyFile, apiType, gptModel, grumpyRole, 
+                        pathwaysList, outfileName, max_tokens=28000, top_p=0.95, 
+                        frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True):
         """
         Run the Grumpy analysis in a specific mode with the provided parameters.
 
@@ -264,18 +335,18 @@ class GrumpyGSEA:
         """
         logging.info(f"Running Grumpy in {mode} mode")
         grumpyConnect(keyFile, apiType, gptModel, grumpyRole, pathwaysList, outfileName,
-                        max_tokens=max_tokens, hidden=hidden, temperature=temperature, top_p=top_p)
+                        max_tokens=max_tokens, temperature=temperature, top_p=top_p, hidden=hidden)
 
 
-    def run_gsea(self, input_type, reportType, inputFile=None, inputDirectory=None, keyFile, apiType, gptModel, 
-                outfileNamePrefix, species, context="", topPaths=250, FDRcut=0.05, pValCut=0.05, 
-                max_tokens=32000, hidden=False):
+    def run_gsea(self, inputType, reportType, inputFile, protocol, inputDirectory, force, keyFile, apiType, gptModel, 
+                context, outfileNamePrefix, hidden, species, topPaths=250, FDRcut=0.05, pValCut=0.05, 
+                max_tokens=32000):      
         """
         Runs the GSEA analysis using Grumpy, followed by sanity check and reporting.
 
         Parameters:
         -----------
-        input_type : str
+        inputType : str
             Type of input provided (e.g., 'deseq2results' or other).
         reportType : str
             Type of report ('gsealist' or 'gseareport').
@@ -307,29 +378,69 @@ class GrumpyGSEA:
 
         # Load genes or pathways list based on input type and report type
         if reportType == 'gsealist':
-            if input_type == 'deseq2results':
+            if inputType == 'deseq2':
                 if os.path.isfile(os.path.join(inputFile)):
                     deseq2Df = pd.read_csv(os.path.join(inputFile))
                     referenceList = deseq2Df["geneSymbol"].tolist()
-            elif input_type == 'genes':
+                    pathwaysList = ""
+            elif inputType == 'genes':
                 with open(inputDirectory, 'r') as file:
                     genesList = file.read().split("\n")
             else:
                 raise ValueError("Unsupported input type for 'gsealist'")
         elif reportType == 'gseareport':
-            if os.path.isfile(os.path.join(inputDirectory, "gseapy.gene_set.prerank.report.filtered.csv")):
-                pathwaysDf = pd.read_csv(os.path.join(inputDirectory, "gseapy.gene_set.prerank.report.filtered.csv"))
-                referenceList = pathwaysDf["Term"].tolist()
+            ### Check if `gseapy.gene_set.prerank.report.filtered.csv` file is present, and open it to get the list of pathways
+            ### This CVS file has the following columns: Name,Term,ES,NES,NOM p-val,FDR q-val,FWER p-val,Tag %,Gene %,Lead_genes,inGMT
+            if inputType == "pathways":
+                if os.path.isfile(os.path.join(inputDirectory, "gseapy.gene_set.prerank.report.filtered.csv")):
+                    pathwaysDf = pd.read_csv(os.path.join(inputDirectory, "gseapy.gene_set.prerank.report.filtered.csv"))
+                    referencePathwaysList = list(pathwaysDf["Term"])
 
-                upPathways = pathwaysDf[(pathwaysDf["FDR q-val"] < FDRcut) & (pathwaysDf["NES"] > 0)].head(topPaths)["Term"].tolist()
-                downPathways = pathwaysDf[(pathwaysDf["FDR q-val"] < FDRcut) & (pathwaysDf["NES"] < 0)].head(topPaths)["Term"].tolist()
-            else:
-                raise ValueError("GSEA report file not found.")
+                    signUpPaths = pathwaysDf[(pathwaysDf["FDR q-val"] < FDRcut) & (pathwaysDf["NOM p-val"] < pValCut) & (pathwaysDf["NES"] > 0)]
+                    signUpPaths.sort_values(by="NES", inplace=True, ascending=False)
+                    upPathways = list(signUpPaths.head(topPaths)["Term"])
+                    if len(upPathways) == 0:
+                        upPathways = ["No significant upregulated pathways were found."]
+
+                    signDownPaths = pathwaysDf[(pathwaysDf["FDR q-val"] < FDRcut) & (pathwaysDf["NOM p-val"] < pValCut) & (pathwaysDf["NES"] < 0)]
+                    signDownPaths.sort_values(by="NES", inplace=True, ascending=True)
+                    downPathways = list(signDownPaths.head(topPaths)["Term"])
+                    if len(downPathways) == 0:
+                        downPathways = ["No significant downregulated pathways were found."]
+
+                    pathwaysList = f"""
+                    Found {len(signUpPaths)} of significantly upregulated pathways. Top {np.min([topPaths, len(signUpPaths)])} are:
+                    {upPathways}
+
+                    Found {len(signDownPaths)} of significantly downregulated pathways. Top {np.min([topPaths, len(signDownPaths)])} are:
+                    {downPathways}
+                    """
+                else:
+                    raise ValueError("Unsupported input type for 'gseareport'")
         else:
-            raise ValueError("Unrecognized report type. Please use 'gsealist' or 'gseareport'.")
+            pathwaysList = "unrecognized report type - report an error"
 
-        # Create context description if provided
-        contextDescription = f"Additionally, please analyze the GSEA results with the following biological context in mind: {context}"
+        if context:
+            contextDescription = f"Additionally, please analyze the GSEA results with the following biological context in mind: {context}"
+        else:
+            contextDescription = ""
+        
+        basicRole = """
+        In this task, you are focusing on the list of gene signatures / gene sets / pathways, coming from the Gene Set Enrichment Analysis (GSEA). Your goal is to analyze all those pathways presented to you, and to highlight the most relevant ones, emphasizing why do you think they are relevant.
+        Moreover, please be as critique, as skeptical and as realistic as possible, dont make things up. If you find some potentially interesting patterns, mention them. If you find something that is worht further exploring, mention that as well. If something doesnt make sense, e.g. you identify contradictory results of some sort, please feel free to mention that as well. But if you dont find anything interesting, just say that you dont find anything interesting and that is much better than making things up.
+
+        Assuming that you indeed identify the pathways worth highlighting, try to separate them into specific categories, like pathways related with cell proliferation, pathways relevant for immune system or for signalling etc. But be flexible while categorizing and take the biological context into account.
+
+        Finally, when you mention the actual pathway's name, always put two vertical bars (i.e. "||")  before and after the name, e.g. ||KEGG_CELL_CYCLE||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
+        """
+
+        grumpyRole = f"""
+        You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the evaluation for their data, in better understanding them and in finding patterns relevant for further studies.
+        --------
+        {basicRole}
+        --------
+        {contextDescription}
+        """
 
         # Define output file names for each evaluation mode
         outfileName_precise = f"{outfileNamePrefix}.precise.md"
@@ -337,23 +448,6 @@ class GrumpyGSEA:
         outfileName_creative = f"{outfileNamePrefix}.creative.md"
         outfileName_report = f"{outfileNamePrefix}.evaluation.html"
 
-        basicRole = """
-        In this task, you are focusing on the list of gene signatures / gene sets / pathways, coming from the Gene Set Enrichment Analysis (GSEA). Your goal is to analyze all those pathways presented to you, and to highlight the most relevant ones, emphasizing why do you think they are relevant.
-        Moreover, please be as critique, as skeptical and as realistic as possible, dont make things up. If you find some potentially interesting patterns, mention them. If you find something that is worth further exploring, mention that as well. If something doesn't make sense, e.g., you identify contradictory results, please feel free to mention that as well. But if you don't find anything interesting, just say that you don't find anything interesting and that is much better than making things up.
-
-        Assuming that you indeed identify the pathways worth highlighting, try to separate them into specific categories, like pathways related with cell proliferation, pathways relevant for immune system or for signaling, etc. Be flexible while categorizing and take the biological context into account.
-
-        Finally, when you mention the actual pathway's name, always put two vertical bars (i.e. "||")  before and after the name, e.g. ||KEGG_CELL_CYCLE||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
-        """
-
-        # Define Grumpy role with context and basic biological analysis task
-        grumpyRole = f"""
-        You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the evaluation for their data, in better understanding them, and in finding patterns relevant for further studies.
-        --------
-        {basicRole}
-        --------
-        {contextDescription}
-        """
 
         # Define parameters for each mode
         modes_params = {
@@ -375,9 +469,8 @@ class GrumpyGSEA:
 
         # Running Grumpy in different modes
         for mode, params in modes_params.items():
-            run_grumpy_mode(mode, **common_params, **params)
-
+            self.run_grumpy_mode(mode, **common_params, **params)
+        
         # Generate the final HTML report based on the evaluations
-        self.call_reporter(input_type, referenceList, species, outfileName_precise, outfileName_balanced,
-                            outfileName_creative, outfileName_report, grumpyRole, pathwaysList,
-                            context, outfileNamePrefix)
+        self.call_reporter(inputType, referencePathwaysList, species, outfileName_precise, outfileName_balanced,
+                            outfileName_creative, outfileName_report, grumpyRole, pathwaysList, context, outfileNamePrefix)
