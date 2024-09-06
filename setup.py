@@ -8,6 +8,13 @@ def get_version():
         exec(f.read(), version)
     return version['__version__']
 
+def read_requirements():
+    try:
+        with open('requirements.txt', 'r') as f:
+            return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    except FileNotFoundError:
+        return []
+
 
 # Read the contents of your README file
 with open('README.md', 'r', encoding='utf-8') as fh:
@@ -22,23 +29,21 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/stjude-biohackathon/KIDS24-team18',  # Replace with your project's URL
-    packages=find_packages(where='grumpy'),  # Finds the 'grumpy' package
+    packages=['grumpy'],  # Finds the 'grumpy' package
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',  # Adjust license if needed
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.9',
-    install_requires=[  # Dependencies from requirements.txt
-        line.strip() for line in open('requirements.txt')
-    ],
+    install_requires=[read_requirements()],
     package_data={
         # Include any data files from the 'grumpy' package
         'grumpy': ['data/*', 'templates/*'],
     },
     entry_points={
         'console_scripts': [
-            'grumpy=grumpy.grumpy:main',  # Entry point for your script
+            'grumpy=grumpy.cli:main',  # Entry point for your script
         ],
     },
     include_package_data=True,
