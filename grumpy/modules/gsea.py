@@ -8,7 +8,7 @@ import gseapy as gp
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from utils.html_processing import (format_html, load_html_template,
+from grumpy.utils.html_processing import (format_html, load_html_template,
                                    write_html_file)
 
 from grumpy.connect import grumpyConnect
