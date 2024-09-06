@@ -21,10 +21,9 @@ from pathlib import Path
 from math import ceil
 from grumpy.utils.logger import CustomFormatter
 from grumpy.utils.html_processing import decodeHTML
-from grumpy.utils.report_parsing import parseStandardRepDir
+from grumpy.utils.report_parsing import parseStandardRepDir, parseMultiQCReportDir
 from grumpy.utils.utils import str2bool
 from grumpy.modules.qc import callGrumpySTD
-from grumpy.connect import grumpyConnect
 from grumpy.modules.gsea import GrumpyGSEA
 from grumpy.modules.dpk import callGrumpyDPKQC, callGrumpyDPKExtract
 from grumpy.modules.mea import callGrumpyMEA

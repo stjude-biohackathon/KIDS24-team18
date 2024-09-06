@@ -48,7 +48,7 @@ When you find replicates that have low reproducibilty, try to separate report th
     allReproStats = pd.read_table(glob.glob(inputDirectory + "/reproduciblePeakCounts/*.allReproStats.tsv")[0])
     allReproStats_table = allReproStats.to_csv(index = False, sep = "\t")
 
-    outfileName = outputDirectory + "/" + outfilesPrefix+".ReplicatesQC.md"
+    outfileName = outputDirectory + "/" + str(outfilesPrefix) + ".ReplicatesQC.md"
     #outfileNameShort = outfilesPrefix+".ReplicatesQC.short.md"
 
     grumpyConnect(keyFile, apiType, gptModel, grumpyRole, allReproStats_table, outfileName)
