@@ -80,6 +80,7 @@ def callGrumpyDPKExtract(inputDirectory, outfilesPrefix, force, keyFile, apiType
 You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. 
 Your goal in this task is to help people check if the differential peak analysis work as expected, as well as help people find out peaks that are relavant to specific biological process.
 More importantly, I want you to be as critique, realistic as possible. 
+Finally, when you mention regions, always put two vertical bars (i.e. "||") before and after the region, e.g. ||chr1:12345-12867||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
 --------
 {basicRole}
 --------
@@ -95,7 +96,7 @@ More importantly, I want you to be as critique, realistic as possible.
         Top_DPK_Regions = DF_kept.head(100)
         Bottom_DPK_Regions = DF_kept.tail(100)
         DPK_Regions = pd.concat([Top_DPK_Regions, Bottom_DPK_Regions])
-        AnnoRank_table = combined.to_csv(index = False, sep = "\t")
+        AnnoRank_table = DPK_Regions.to_csv(index = False, sep = "\t")
 
         outfileName_precise = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'precise.md')
         outfileName_balanced = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'balanced.md')
