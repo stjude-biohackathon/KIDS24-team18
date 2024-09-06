@@ -91,16 +91,15 @@ More importantly, I want you to be as critique, realistic as possible.
     ## for each comparison, generate a query
     for f in comparisonFiles:
         DF = pd.read_table(f, sep = "\t") ## since the table is already sorted, 
-        DF_kept = DF[['Region','log2FC', 'log2AveExpr', 't.value', 'p.value', 'q.value', 'Regulation', 'Gene_2kb', 'Gene_2-50kb', 'Closest_Gene', 'Distance','FeatureAssignment']]
-        AnnoRank_table = DF_kept.to_csv(index = False, sep = "\t")
+        DF_kept = DF[['Region','Regulation', 'Closest_Gene', 'Distance','FeatureAssignment']]
+        Top_DPK_Regions = DF_kept.head(100)
+        Bottom_DPK_Regions = DF_kept.tail(100)
+        DPK_Regions = pd.concat([Top_DPK_Regions, Bottom_DPK_Regions])
+        AnnoRank_table = combined.to_csv(index = False, sep = "\t")
 
         outfileName_precise = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'precise.md')
         outfileName_balanced = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'balanced.md')
         outfileName_creative= os.path.basename(f).replace('vout.anno.Ranks.tsv', 'creative.md')
-
-        #outfileName_precise = outfilesPrefix + '.precise.md'
-        #outfileName_balanced = outfilesPrefix '.balanced.md'
-        #outfileName_creative= outfilesPrefix '.creative.md'
 
         ### Running the Grumpy in the Precise mode:
         grumpyConnect(keyFile, apiType, gptModel, grumpyRole, AnnoRank_table, outfileName_precise,
