@@ -62,7 +62,7 @@ research needs. Detailed usage instructions will be provided in future updates.
 To run grumpy, start the chatbot using the below command -
 
    ```bash
-   streamlit run grumpy_bot/app.py
+   streamlit run grumpy_bot/chat.py
    ```
 
 **Note:** Upload an example dataset with an `OPENAI API Key`, use the below file in the top level repository folder.
