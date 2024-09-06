@@ -1,0 +1,3 @@
+Sample	meth_chg	meth_chh	meth_cpg	percent_chg_meth	percent_chh_meth	percent_cpg_meth	total_c	unmeth_chg	unmeth_chh	unmeth_cpg	version
+ENCSR707MKB_rep1	5630086.0	19865228.0	120033246.0	0.8	0.8	82.0	3458113377.0	712802413.0	2573503201.0	26279203.0	0.19.1
+ENCSR707MKB_rep2	5371412.0	18857853.0	114196139.0	0.8	0.8	81.7	3270362719.0	676627563.0	2429765741.0	25544011.0	0.19.1

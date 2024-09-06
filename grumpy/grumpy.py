@@ -24,7 +24,7 @@ from utils.utils import id_generator, load_template, str2bool
 from utils.tokenization import getMaxTokenPerModel
 from utils.compression import compress_text, decompress_text
 from utils.peak_analysis import determinePkCalling, getPeakNumber
-from utils.report_parsing import parseStandardRepDir
+from utils.report_parsing import parseStandardRepDir, parseMultiQCReportDir
 from modules.qc import callGrumpySTD
 from modules.dpk import callGrumpyDPKQC
 from modules.dpk import callGrumpyDPKExtract
@@ -65,7 +65,9 @@ def parseArgs():
     
     optionalParams_qc = qcParser.add_argument_group("Optional QC parameters")
     optionalParams_qc.add_argument("-n", "--protocolFullName", help="If you specified the 'protocol' (-p) as 'other', you should add here what the type of protocol we deal with here, like for example Hi-C, which will help the LLM to establish the best set of reference guidelines to analyze it. By default = 'unspecified'.", action="store", type=str, required=False, dest="protocolFullName", default='unspecified')
+    optionalParams_qc.add_argument("--inputType", help="Type of the input file, so either this should point directly to the text file / table with some statistics that is relevant, or the directory where the mapping statistics from automapper are located, or to the directory that has the multiqc report inside. By default = 'automapper'.", action="store", type=str, required=False, dest="inputType", default='automapper', choices=['automapper', 'classicStdReportDir', 'multiqc'])
     
+
     ### PE Parser for Automapper and standard reports.
     peParser = subparsers.add_parser('PE', help='Run evaluation of the Pathway Enrichment (PE) analyses for either GSEA results, or typical Pathway Enrichment.', parents=[common_parser])
     
@@ -113,7 +115,6 @@ def parseArgs():
     params = vars(parser.parse_args())
 
     lgr.info("Parsed arguments: {}".format(params))
-    lgr.info("Protocol (--protocol flag): {}".format(params["protocol"]))
 
     errors = False
     if not os.path.exists(params["inputDirectory"]):
@@ -217,7 +218,7 @@ def parseArgs():
 
     return params
 
-def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=28000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True, saveResponse=True):
+def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=128000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True, saveResponse=True):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
 
     if hidden == False:
@@ -606,12 +607,17 @@ def main():
     outfileNameShort = os.path.join(params['outputDirectory'], f"{params['outfilesPrefix']}.concise.md")
 
     if params["keyFilePresent"]:
-        if params["reportType"] == 'std':
-            metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], params['outputDirectory'], params['apikey'], params["apiType"], params["gptModel"], hidden=params["hidden"])
-            callGrumpySTD(metaFile, params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
-        elif params["reportType"] in ['gsealist', 'gseareport']:
-            callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
-        elif params["reportType"] == 'decode':
+        if params["mode"] == 'QC':
+            if params["inputType"] == "automapper" or params["inputType"] == "classicStdReportDir":
+                metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params['outputDirectory'], params['apikey'], params["apiType"], params["gptModel"], hidden=params["hidden"])
+                callGrumpySTD([metaFile], params["inputType"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
+            else:
+                metaFiles = parseMultiQCReportDir(params["inputDirectory"], params["protocol"], params['protocolFullName'], params["apikey"], params["apiType"], params["gptModel"], params["outfilesPrefix"], params['outputDirectory'], hidden=params["hidden"])
+                callGrumpySTD(metaFiles, params["inputType"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
+        elif params["mode"] == 'PE':
+            if params["reportType"] in ['gsealist', 'gseareport']:
+                callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
+        elif params["mode"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
         elif params["reportType"] == 'dpk':
             callGrumpyDPKQC(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])

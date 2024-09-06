@@ -1,0 +1,7 @@
+10.1093/bioinformatics/btw354                      # MultiQC
+10.1101/gr.136184.111                              # phantompeakqualtools
+10.1038/nbt.1508                                   # phantompeakqualtools
+10.1101/496521                                     # macs
+10.1186/gb-2008-9-9-r137                           # macs
+10.1093/bioinformatics/btp352                      # Samtools
+

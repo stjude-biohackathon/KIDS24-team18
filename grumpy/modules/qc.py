@@ -19,7 +19,7 @@ from utils.compression import compress_text, decompress_text
 from utils.peak_analysis import determinePkCalling, getPeakNumber
 from utils.report_parsing import parseStandardRepDir
 
-def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
+def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
                   outfileNameShort, hidden=False):
     """
     Function to call the Grumpy AI for generating a standard report based on a metafile. 
@@ -59,19 +59,7 @@ def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, k
 
     # Initialize logger for this function
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
-    lgr.info("Calling the Grumpy for the standard report metafile '{}'.".format(metaFile))
-    
-    ### Renaming old assessments if they already exist
-    if os.path.exists(outfileName):
-        movedOutfileName = f"{outfileName}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileName)).strftime('%Y%m%d')}.{id_generator()}.txt"
-        os.rename(outfileName, movedOutfileName)
-        lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileName, movedOutfileName)
-    
-    if os.path.exists(outfileNameShort):
-        movedOutfileName = f"{outfileNameShort}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileNameShort)).strftime('%Y%m%d')}.{id_generator()}.txt"
-        os.rename(outfileNameShort, movedOutfileName)
-        lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileNameShort, movedOutfileName)
-    
+
     ### Define descriptions for the basic role for Grumpy based on the protocol
     basicRole = load_template(protocol)
     if protocol == "other":
@@ -86,42 +74,99 @@ def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, k
     {basicRole}
     """
 
-    ### Read the metafile as a simple text file
-    with open(metaFile, 'r') as f:
-        QC_table = f.read()
+    if inputType == "automapper" or inputType == "classicStdReportDir":
+        metaFile = metaFile[0]
+        lgr.info("Calling the Grumpy for the standard report metafile '{}'.".format(metaFile))
+    
+        ### Renaming old assessments if they already exist
+        if os.path.exists(outfileName):
+            movedOutfileName = f"{outfileName}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileName)).strftime('%Y%m%d')}.{id_generator()}.txt"
+            os.rename(outfileName, movedOutfileName)
+            lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileName, movedOutfileName)
+        
+        if os.path.exists(outfileNameShort):
+            movedOutfileName = f"{outfileNameShort}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileNameShort)).strftime('%Y%m%d')}.{id_generator()}.txt"
+            os.rename(outfileNameShort, movedOutfileName)
+            lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileNameShort, movedOutfileName)
+    
+        ### Read the metafile as a simple text file
+        with open(metaFile, 'r') as f:
+            QC_table = f.read()
 
-    ### Process the metafile as a pandas DataFrame and evaluate duplication rates
-    df = pd.read_csv(metaFile, sep="\t")
-    dupColName = "ignore"
-    for col in ["DUPLICATION (%)", "Duplication Rate(%)"]:
-        if col in df.columns:
-            dupColName = col
-    if dupColName != "ignore":
-        try:
-            df[dupColName] = df[dupColName].str.replace("%", "").astype(float)
-        except AttributeError:
-            pass
-        highDuplicationSamples = df[df[dupColName] > 30].shape[0]
-        if highDuplicationSamples > 0:
-            highDupNote = f"Additional Note: There are {highDuplicationSamples} samples with duplication rates higher than 30%."
-            QC_table += f"\n\n{highDupNote}\n"
+        ### Process the metafile as a pandas DataFrame and evaluate duplication rates
+        df = pd.read_csv(metaFile, sep="\t")
+        dupColName = "ignore"
+        for col in ["DUPLICATION (%)", "Duplication Rate(%)"]:
+            if col in df.columns:
+                dupColName = col
+        if dupColName != "ignore":
+            try:
+                df[dupColName] = df[dupColName].str.replace("%", "").astype(float)
+            except AttributeError:
+                pass
+            highDuplicationSamples = df[df[dupColName] > 30].shape[0]
+            if highDuplicationSamples > 0:
+                highDupNote = f"Additional Note: There are {highDuplicationSamples} samples with duplication rates higher than 30%."
+                QC_table += f"\n\n{highDupNote}\n"
 
-    ### Evaluate mapping rates and append notes if applicable
-    mapColName = "ignore"
-    for col in ["Mapping Rate(%)", "MAPPED (%)"]:
-        if col in df.columns:
-            mapColName = col
-    if mapColName != "ignore":
-        try:
-            df[mapColName] = df[mapColName].str.replace("%", "").astype(float)
-        except AttributeError:
-            pass
-        lowMappingSamples = df[df[mapColName] < 80].shape[0]
-        if lowMappingSamples > 0:
-            lowMapNote = f"Additional Note: There are {lowMappingSamples} samples with mapping rates lower than 80%."
-            QC_table += f"\n\n{lowMapNote}\n"
+        ### Evaluate mapping rates and append notes if applicable
+        mapColName = "ignore"
+        for col in ["Mapping Rate(%)", "MAPPED (%)"]:
+            if col in df.columns:
+                mapColName = col
+        if mapColName != "ignore":
+            try:
+                df[mapColName] = df[mapColName].str.replace("%", "").astype(float)
+            except AttributeError:
+                pass
+            lowMappingSamples = df[df[mapColName] < 80].shape[0]
+            if lowMappingSamples > 0:
+                lowMapNote = f"Additional Note: There are {lowMappingSamples} samples with mapping rates lower than 80%."
+                QC_table += f"\n\n{lowMapNote}\n"
 
-    ### Connect to Grumpy AI and generate the reports
-    grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
-    # grumpyConnect(keyFile, apiType, gptModel, grumpyRoleShorter, QC_table, outfileNameShort)
+        ### Connect to Grumpy AI and generate the reports
+        grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
+        # grumpyConnect(keyFile, apiType, gptModel, grumpyRoleShorter, QC_table, outfileNameShort)
+    else:
+        lgr.info("Calling the Grumpy for the MultiQC report metafiles")
+
+        grumpyRole += """As the query you will receive a list of possibly several data tables, each coming from the summaries of the MultiQC program. Those tables will generally have largely overlapping information but i cannot in advance predict what information you will be presented with as this is highly dependent on the user's pipeline, and availibility of different reports and summaries from tools they used. Moreover, despite of what is written in the tables, one row in the table not necessarily have to represent different samples. E.g. here are several rows from the `sample` columns of one of the tables during tests:
+        ```
+        Sample_1
+        Sample_1.FDR50_free_macs2
+        Sample_1.chrM
+        Sample_1.free_macs2
+        Sample_1.noXYM
+        Sample_1_R1
+        Sample_1_R1_val_1
+        Sample_1_R2
+        Sample_1_R2_val_2
+        Sample_2
+        Sample_2.FDR50_free_macs2
+        Sample_2.chrM
+        Sample_2.free_macs2
+        Sample_2.noXYM
+        Sample_2_R1
+        Sample_2_R1_val_1
+        Sample_2_R2
+        Sample_2_R2_val_2
+        ```
+        as you can see, they basically represent only two samples, Sample_1 and Sample_2, while all the other suffixes represent either statistics for R1 / R2 reads pre and post trimming, or the number of nucleosome free peaks called with macs2 etc. So while analyzing the datatables presented to you, please try to somewhat concatenate the information from various sources (different tables, or different rows of the same table if neccessary) to the level of 'per sample' quality that you will evaluate.
+
+        """
+
+        ### read in the contents of all the data tables listed in the metaFile parameter, and concatenate them into one string
+        QC_table = ""
+        for idx, file in enumerate(metaFile):
+            with open(file, 'r') as f:
+                QC_table += f"### MultiQC data table no. {idx+1}: {file}\n\n{f.read()}\n\n"
+        
+        ### Connect to Grumpy AI and generate the reports
+        grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
+        
+
+
+
+
+        
 
