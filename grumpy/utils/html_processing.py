@@ -2,7 +2,7 @@ import logging
 import re
 import os
 
-from grumpy.utils.compression import compress_text, decompress_text
+from utils.compression import compress_text, decompress_text
 from jinja2 import Template
 
 def extract_section(file_path, flankPattern):

@@ -4,7 +4,7 @@ import tiktoken
 import inspect
 
 from openai import AzureOpenAI, OpenAI, AuthenticationError
-from grumpy.utils.tokenization import getMaxTokenPerModel  # Ensure this is in your utils
+from utils.tokenization import getMaxTokenPerModel  # Ensure this is in your utils
 
 def grumpyConnect(keyFile, apiType, gptModel, grumpyRole, query, outfileName, max_tokens=128000, top_p=0.95, frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True, saveResponse=True):
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
