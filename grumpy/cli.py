@@ -19,16 +19,15 @@ import base64
 from pathlib import Path
 
 from math import ceil
-from utils.logger import CustomFormatter
-from utils.html_processing import decodeHTML
-from utils.report_parsing import parseStandardRepDir
-from utils.utils import str2bool
-from modules.qc import callGrumpySTD
-from connect import grumpyConnect
-from modules.gsea import GrumpyGSEA
-from modules.dpk import callGrumpyDPKQC, callGrumpyDPKExtract
-from modules.mea import callGrumpyMEA
-from version import __version__
+from grumpy.utils.logger import CustomFormatter
+from grumpy.utils.html_processing import decodeHTML
+from grumpy.utils.report_parsing import parseStandardRepDir, parseMultiQCReportDir
+from grumpy.utils.utils import str2bool
+from grumpy.modules.qc import callGrumpySTD
+from grumpy.modules.gsea import GrumpyGSEA
+from grumpy.modules.dpk import callGrumpyDPKQC, callGrumpyDPKExtract
+from grumpy.modules.mea import callGrumpyMEA
+from grumpy.version import __version__
 
 from pathlib import Path
 
@@ -182,7 +181,7 @@ def parseArgs():
             params["reportType"] = "dpk"
             pass
         else:
-            lgr.error(f"The input direcoty doesn't exsit, Program was aborted.")
+            lgr.error(f"The input directory doesn't exist, Program was aborted.")
             errors = True
     
     params["keyFilePresent"] = True
