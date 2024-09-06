@@ -24,7 +24,7 @@ from openai import AzureOpenAI, AuthenticationError, OpenAI
 
 
 
-def callGrumpyDPKQC(inputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, hidden=False):
+def callGrumpyDPKQC(inputDirectory, outputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, hidden=False):
 
     from grumpy import grumpyConnect
 
@@ -33,11 +33,11 @@ def callGrumpyDPKQC(inputDirectory, outfilesPrefix, force, keyFile, apiType, gpt
 In this task, you are focusing on assessing if the biological replicates have high reproducibility for each group. Your goal is to report the biological replicates that have low replicates so that biological scientists can have further investigation. 
 Moreover, please be relaxed, for example, if replicate 1 has less than 60% peaks of replicate 2, then these two replicates have low reproducibility. But be as realistic as possible in this task, dont make things up. 
 
-Also, just report the replicates having low reproducibility, you don't need to give any reason why this happen. If the biological replicates have high reproducibility, you don't need report them for the sake of consice information.
+Also, you don't need to give any reason why this happen when the replicates have low reproducibility. 
 When you find replicates that have low reproducibilty, try to separate report them in a format below: 
-1. **WT_rep1 & WT_rep2 have low reproducibility:**
+1. **WT_rep1 & WT_rep2 have high reproducibility:**
    - WT_rep1 has 184060 peaks.
-   - WT_rep2 has 90000 peaks.
+   - WT_rep2 has 190000 peaks.
    - Warning: These two replicates need further investigation. 
 2. **KO_rep1 & KO_rep2 have low reproducibility:**
    - WT_rep1 has 74060 peaks.
@@ -48,7 +48,7 @@ When you find replicates that have low reproducibilty, try to separate report th
     allReproStats = pd.read_table(glob.glob(inputDirectory + "/reproduciblePeakCounts/*.allReproStats.tsv")[0])
     allReproStats_table = allReproStats.to_csv(index = False, sep = "\t")
 
-    outfileName = outfilesPrefix+".ReplicatesQC.md"
+    outfileName = outputDirectory + "/" + outfilesPrefix+".ReplicatesQC.md"
     #outfileNameShort = outfilesPrefix+".ReplicatesQC.short.md"
 
     grumpyConnect(keyFile, apiType, gptModel, grumpyRole, allReproStats_table, outfileName)
@@ -56,7 +56,7 @@ When you find replicates that have low reproducibilty, try to separate report th
 
 
 
-def callGrumpyDPKExtract(inputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, context, hidden=False):
+def callGrumpyDPKExtract(inputDirectory, outputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, context, hidden=False):
     
     from grumpy import grumpyConnect
     ### load the basicRole for the Grumpy for differentail peak analysis
@@ -80,7 +80,9 @@ def callGrumpyDPKExtract(inputDirectory, outfilesPrefix, force, keyFile, apiType
 You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. 
 Your goal in this task is to help people check if the differential peak analysis work as expected, as well as help people find out peaks that are relavant to specific biological process.
 More importantly, I want you to be as critique, realistic as possible. 
+If the contextDescription is not 'ignore', I also need you to describe what biological process that I am interested in at the begining of the report. 
 Finally, when you mention regions, always put two vertical bars (i.e. "||") before and after the region, e.g. ||chr1:12345-12867||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
+
 --------
 {basicRole}
 --------
@@ -98,9 +100,9 @@ Finally, when you mention regions, always put two vertical bars (i.e. "||") befo
         DPK_Regions = pd.concat([Top_DPK_Regions, Bottom_DPK_Regions])
         AnnoRank_table = DPK_Regions.to_csv(index = False, sep = "\t")
 
-        outfileName_precise = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'precise.md')
-        outfileName_balanced = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'balanced.md')
-        outfileName_creative= os.path.basename(f).replace('vout.anno.Ranks.tsv', 'creative.md')
+        outfileName_precise = outputDirectory + "/" + os.path.basename(f).replace('vout.anno.Ranks.tsv', 'precise.md')
+        outfileName_balanced = outputDirectory + "/" + os.path.basename(f).replace('vout.anno.Ranks.tsv', 'balanced.md')
+        outfileName_creative= outputDirectory + "/" + os.path.basename(f).replace('vout.anno.Ranks.tsv', 'creative.md')
 
         ### Running the Grumpy in the Precise mode:
         grumpyConnect(keyFile, apiType, gptModel, grumpyRole, AnnoRank_table, outfileName_precise,
