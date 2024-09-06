@@ -1,0 +1,9 @@
+langchain
+langchain-chroma
+langchain_openai
+unstructured[all-docs]
+pydantic
+lxml
+ipykernel
+pytesseract
+langchain_ollama

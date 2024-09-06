@@ -104,6 +104,11 @@ chmod +x examples/run_grumpy_pe_openai.sh
 sh examples/run_grumpy_pe_openai.sh
 ```
 
+## Running Grumpy chatbot
+
+Please follow instructions in `grumpybot/readme.md` !
+
+
 ## License
 
 This project is licensed under [MIT](./LICENSE).

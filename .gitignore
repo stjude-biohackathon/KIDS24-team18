@@ -50,8 +50,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-*.md
 *.html
+figures/
 
 # Translations
 *.mo
@@ -173,6 +173,5 @@ grumpy_env/
 *.creative.md
 *.evaluation.html
 .DS_Store
-*.png
 *.svg
 *.md.prompt.txt

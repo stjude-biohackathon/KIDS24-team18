@@ -11,19 +11,19 @@ from pathlib import Path
 
 import datetime
 
-from grumpy.utils.logger import CustomFormatter
-from grumpy.utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
-from grumpy.utils.utils import id_generator, load_template, str2bool, caesar_cipher
-from grumpy.utils.tokenization import getMaxTokenPerModel
-from grumpy.utils.compression import compress_text, decompress_text
-from grumpy.utils.peak_analysis import determinePkCalling, getPeakNumber
-from grumpy.utils.report_parsing import parseStandardRepDir
+from utils.logger import CustomFormatter
+from utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
+from utils.utils import id_generator, load_template, str2bool, caesar_cipher
+from utils.tokenization import getMaxTokenPerModel
+from utils.compression import compress_text, decompress_text
+from utils.peak_analysis import determinePkCalling, getPeakNumber
+from utils.report_parsing import parseStandardRepDir
 
-def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
+def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName,
                   outfileNameShort, hidden=False):
     """
-    Function to call the Grumpy AI for generating a standard report based on a metafile. 
-    The function handles renaming of old assessments, setting up the role for Grumpy, 
+    Function to call the Grumpy AI for generating a standard report based on a metafile.
+    The function handles renaming of old assessments, setting up the role for Grumpy,
     processing QC tables, and finally generating both detailed and concise assessment reports.
 
     Parameters:
@@ -55,7 +55,7 @@ def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefi
     --------
     None
     """
-    from grumpy.connect import grumpyConnect
+    from connect import grumpyConnect
 
     # Initialize logger for this function
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
@@ -66,7 +66,7 @@ def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefi
         basicRole = f"First and foremost, you are here going to analyze the data from the '{protocolFullName}' protocol. The following are the general guidelines for the analysis that you have to run, without any specific protocol in mind, so please adjust accordingly to the procol specified here as '{protocolFullName}'."
 
     grumpyRole = f"""
-    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words). 
+    You are an AI assistant that acts as the Computational Biology expert in the area of Epigenetics. Your goal is to help people with the QC evaluation for their data and in providing recommendations. Please be as concise as possible in providing your assessment (not extending 300 words).
     Moreover, please be as critique, as skeptical and as realistic as possible, I want you to be able to provide focus on the low-quality aspects of the data for the human recipient of your message. If you don't find any issues with the data, don't make them up, instead just please write that it all rather looks good etc.
 
     Finally, when you mention the actual sample names, always put two vertical bars (i.e. "||") before and after the name, e.g. ||123451_H3K27Ac_rep1||. This is critical for the proper identification of mentioned names by the subsequent script and proper formatting of the report.
@@ -77,18 +77,18 @@ def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefi
     if inputType == "automapper" or inputType == "classicStdReportDir":
         metaFile = metaFile[0]
         lgr.info("Calling the Grumpy for the standard report metafile '{}'.".format(metaFile))
-    
+
         ### Renaming old assessments if they already exist
         if os.path.exists(outfileName):
             movedOutfileName = f"{outfileName}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileName)).strftime('%Y%m%d')}.{id_generator()}.txt"
             os.rename(outfileName, movedOutfileName)
             lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileName, movedOutfileName)
-        
+
         if os.path.exists(outfileNameShort):
             movedOutfileName = f"{outfileNameShort}.{datetime.datetime.fromtimestamp(os.path.getctime(outfileNameShort)).strftime('%Y%m%d')}.{id_generator()}.txt"
             os.rename(outfileNameShort, movedOutfileName)
             lgr.info("The output file '%s' already existed, so it was renamed to '%s'.", outfileNameShort, movedOutfileName)
-    
+
         ### Read the metafile as a simple text file
         with open(metaFile, 'r') as f:
             QC_table = f.read()
@@ -160,12 +160,6 @@ def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefi
         for idx, file in enumerate(metaFile):
             with open(file, 'r') as f:
                 QC_table += f"### MultiQC data table no. {idx+1}: {file}\n\n{f.read()}\n\n"
-        
+
         ### Connect to Grumpy AI and generate the reports
         grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
-        
-
-
-
-
-        
