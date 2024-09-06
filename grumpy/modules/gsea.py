@@ -27,7 +27,6 @@ class GrumpyGSEA:
         gene_sets : list, optional
             List of gene sets to use for enrichment analysis. Default includes 'Reactome_2022' and 'KEGG_2021_Human'.
         """
-        self.gene_list = []
         self.organism = organism
         self.gene_sets = gene_sets or ['Reactome_2022', 'KEGG_2021_Human']
         self.results = None
@@ -58,8 +57,7 @@ class GrumpyGSEA:
         if col_name not in df.columns:
             raise ValueError(f"The column '{col_name}' was not found in the input file.")
      
-        self.gene_list = df[col_name].dropna().tolist()  # Remove NaN values if any
-        return self.gene_list
+        return df
 
     def enrichr_ora(self, input_file=None, gene_list=None, col_name="geneSymbol", output_file=None):
         """
@@ -85,23 +83,40 @@ class GrumpyGSEA:
             if input_file is None:
                 raise ValueError("Either input_file or gene_list must be provided.")
             # Process the input file to extract the gene list
-            gene_list = self._prep_input_file(input_file=input_file, col_name=col_name)
+            df = self._prep_input_file(input_file=input_file, col_name=col_name)
 
         if not gene_list:
             raise ValueError("Gene list is empty. Please provide a valid input.")
+        
+        # Define thresholds
+        fdr_threshold = 0.05
+        log2fc_threshold = 0.05
 
-        enr = gp.enrichr(gene_list=gene_list,
+        # Filter for upregulated genes (log2FC > log2fc_threshold and FDR < fdr_threshold)
+        upregulated_genes = df[(df['log2FC'] > log2fc_threshold) & (df['FDR'] < fdr_threshold)][col_name].tolist()
+
+        # Filter for downregulated genes (log2FC < -log2fc_threshold and FDR < fdr_threshold)
+        downregulated_genes = df[(df['log2FC'] < -log2fc_threshold) & (df['FDR'] < fdr_threshold)][col_name].tolist()
+
+
+        down_enr = gp.enrichr(gene_list=downregulated_genes,
+                        gene_sets=self.gene_sets,
+                        organism=self.organism,
+                        outdir=None)  # Don't write to disk
+        
+        up_enr = gp.enrichr(gene_list=upregulated_genes,
                         gene_sets=self.gene_sets,
                         organism=self.organism,
                         outdir=None)  # Don't write to disk
 
-        self.results = enr.results
+        downreg_results = down_enr.results
+        upreg_results = up_enr.results
 
         if output_file:
-            self.results.to_csv(output_file, index=False)
+            downreg_results.to_csv(output_file, index=False)
             print(f"Results saved to {output_file}")
 
-        return self.results
+        return downreg_results, upreg_results
 
 
     def call_sanity_check(self, input_file, inputType, referencePathwaysList,
@@ -132,11 +147,7 @@ class GrumpyGSEA:
             comparison_list = genes_list
 
         elif inputType == 'deseq2':
-            # Assuming deseq2 output is a CSV or TSV file
-            deseq2_data = pd.read_csv(input_file, sep='\t' if input_file.endswith('.tsv') else ',')
-            genes_list = deseq2_data['gene'].tolist()
-            lgr.info(f"Loaded DESeq2 output with {len(genes_list)} genes.")
-            comparison_list = genes_list
+            pass
 
         elif inputType == 'pathways':
             with open(input_file, 'r') as file:
@@ -225,7 +236,7 @@ class GrumpyGSEA:
         if inputType == 'genes':
             pass
 
-        elif inputType == 'deseq2results':
+        elif inputType == 'deseq2':
             pass
 
         elif inputType == 'pathways':
@@ -380,9 +391,11 @@ class GrumpyGSEA:
         if reportType == 'gsealist':
             if inputType == 'deseq2':
                 if os.path.isfile(os.path.join(inputFile)):
-                    deseq2Df = pd.read_csv(os.path.join(inputFile))
-                    referenceList = deseq2Df["geneSymbol"].tolist()
-                    pathwaysList = ""
+                    down, up = self.enrichr_ora(inputFile)
+                    down_sig_results = down[down['Adjusted P-value'] < 0.05]
+                    up_sig_results = up[up['Adjusted P-value'] < 0.05]
+                    significant_terms_with_genes = down_sig_results[['Term', 'Gene_set', 'Genes']]
+
             elif inputType == 'genes':
                 with open(inputDirectory, 'r') as file:
                     genesList = file.read().split("\n")
@@ -472,5 +485,5 @@ class GrumpyGSEA:
             self.run_grumpy_mode(mode, **common_params, **params)
         
         # Generate the final HTML report based on the evaluations
-        self.call_reporter(inputType, referencePathwaysList, species, outfileName_precise, outfileName_balanced,
+        self.call_reporter(inputFile, inputType, referencePathwaysList, species, outfileName_precise, outfileName_balanced,
                             outfileName_creative, outfileName_report, grumpyRole, pathwaysList, context, outfileNamePrefix)
