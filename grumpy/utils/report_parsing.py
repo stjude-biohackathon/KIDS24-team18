@@ -4,33 +4,126 @@ import logging
 import inspect
 import pandas as pd
 
+def parseMultiQCReportDir(reportDir, protocol, protocolFullName, keyFile, apiType, gptModel, outfilesPrefix, outputDirectory, globPattern="multiqc_*.txt", hidden=False):
+    """
+    Function to identify and parse all the summary stat files from MultiQC report directory, the example directory for ATAC-seq could look like this:
+    |-- multiqc_data
+    |   |-- mqc_fastqc_per_base_n_content_plot_1.txt
+    |   |-- mqc_fastqc_per_base_sequence_quality_plot_1.txt
+    |   |-- mqc_fastqc_per_sequence_gc_content_plot_Counts.txt
+    |   |-- mqc_fastqc_per_sequence_gc_content_plot_Percentages.txt
+    |   |-- mqc_fastqc_per_sequence_quality_scores_plot_1.txt
+    |   |-- mqc_fastqc_sequence_counts_plot_1.txt
+    |   |-- mqc_fastqc_sequence_duplication_levels_plot_1.txt
+    |   |-- mqc_fastqc_sequence_length_distribution_plot_1.txt
+    |   |-- multiqc.log
+    |   |-- multiqc_citations.txt
+    |   |-- multiqc_data.json
+    |   |-- multiqc_fastqc.txt
+    |   |-- multiqc_general_stats.txt
+    |   |-- multiqc_macs.txt
+    |   |-- multiqc_samtools_flagstat.txt
+    |   |-- multiqc_software_versions.txt
+    |   `-- multiqc_sources.txt
+    `-- multiqc_report.html
+    The function parse all the files starting with pattern "multiqc_*.txt" and if they contain the tabular data (TSV), with the first column named "Sample", it will be parsed into a single DataFrame. Then the dataframe is added to the list and the list is returned.
+
+    Parameters:
+    -----------
+    reportDir : str
+        The directory containing the report data.
+    globPattern : str, optional
+        The glob pattern to match the files to parse. Defaults to "multiqc_*.txt".
+    hidden : bool, optional
+        If True, the output file will be saved with a dot prefix, making it hidden on UNIX-like systems. Default is False.
+
+    Returns:
+    --------
+    list
+        A list of DataFrames containing the parsed data.
+
+    Raises:
+    -------
+    SystemExit
+        If no files are found matching the glob pattern, the program will abort.
+    """
+    lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
+    lgr.info("Parsing the MultiQC report directory '{}'.".format(reportDir))
+
+    # Search the reportDir recursively for all matching files, even in subdirectories
+    files = glob.glob(os.path.join(reportDir, "**", globPattern), recursive=True)
+
+    # Check if any files were found
+    if len(files) == 0:
+        lgr.critical("No files matching the glob pattern '{}' were found in the directory '{}'. Program was aborted.".format(globPattern, reportDir))
+        exit()
+
+    # Initialize an empty list to store the metadata files from multiqc
+    metaFiles = []
+
+    if protocol == "other":
+        prot = protocolFullName
+    else:
+        prot = protocol
+
+    # set the output file name prefix
+    if hidden:
+        outfileNamePRefix = os.path.join(outputDirectory, f".{outfilesPrefix}.")
+    else:
+        outfileNamePRefix = os.path.join(outputDirectory, f"{outfilesPrefix}.")
+
+    # Loop through each file
+    for file in files:
+        # Read the TSV file into a DataFrame
+        df = pd.read_csv(file, sep='\t')
+
+        # Check if the DataFrame contains a 'Sample' column
+        if 'Sample' in list(df):
+            # remove the columns with all NaN values
+            df = df.dropna(axis=1, how='all')
+
+            # Run basic evaluation for each sample
+            # dfEval = assess_sample_quality(df, prot, keyFile, apiType, gptModel, hidden=True, sampleColName='Sample')
+            dfEval = df.copy()
+
+            ### Save the DataFrame to a TSV file
+            outfileName = f"{outfileNamePRefix}{os.path.basename(file).replace('.txt', '.eval.tsv')}"
+            dfEval.to_csv(outfileName, sep='\t')#, index=False)
+
+            lgr.info("Successfully parsed the report directory with information for {} samples.".format(len(dfEval)))
+
+            # Append the DataFrame to the list
+            metaFiles.append(outfileName)
+
+    # Return the list of DataFrames
+    return metaFiles
+
 
 # Function to generate a prompt for each sample
 def generate_sample_prompt(row, protocol):
     # Dynamically create the list of columns and values
     sample_data = "\n".join([f"- {col}: {row[col]}" for col in row.index])
-    
+
     # Generate the prompt
     prompt = f"""
     You are given the following sample data:
     {sample_data}
-    
+
     The protocol used is {protocol}. Based on this data, evaluate the quality of the sample simply describing it as 'High Quality' or 'Low Quality', no other description whatsoever - its critical for downstream processing. Remember to be a critique about it.
     """
     return prompt
 
 # Function to process each row and return the quality assessment
-def assess_sample_quality(df, protocol, keyFile, apiType, gptModel, outfileName=".tmpSampleEval.txt", hidden=False):
+def assess_sample_quality(df, protocol, keyFile, apiType, gptModel, outfileName=".tmpSampleEval.txt", hidden=False, sampleColName='SAMPLE'):
     assessments = []
-
-    # Loop through each row in the DataFrame
     from grumpy import grumpyConnect
 
+    # Loop through each row in the DataFrame
     for index, row in df.iterrows():
 
         # Generate a prompt for the current row
         prompt = generate_sample_prompt(row, protocol)
-        
+
         grumpyRole = "You are a QC expert for NGS data."
 
         response = grumpyConnect(keyFile, apiType, gptModel, grumpyRole, prompt, outfileName,
@@ -38,14 +131,14 @@ def assess_sample_quality(df, protocol, keyFile, apiType, gptModel, outfileName=
 
         # Append the result for this row
         assessments.append({
-            'SAMPLE': row['SAMPLE'],
+            sampleColName: row[sampleColName],
             'Assessment': response
         })
-    
+
     # Return a DataFrame with the assessments
     return pd.DataFrame(assessments)
 
-def parseStandardRepDir(reportDir, protocol, outfilesPrefix, force, outputDirectory, keyFile, apiType, gptModel, hidden=False):
+def parseStandardRepDir(reportDir, protocol, protocolFullName, outfilesPrefix, force, outputDirectory, keyFile, apiType, gptModel, hidden=False):
     """
     Parses the standard report directory to extract relevant statistics and peak information.
 
@@ -135,18 +228,7 @@ def parseStandardRepDir(reportDir, protocol, outfilesPrefix, force, outputDirect
                 lgr.info("More than one report file was found in the report directory. The program will merge them together.")
             else:
                 statsDf = statsDf[0]
-<<<<<<< HEAD
 
-=======
-        
-
-        ### Evaluate the sample by sample quality:
-        dfEval = assess_sample_quality(df, protocol, keyFile, apiType, gptModel, hidden=True)
-        
-        if (statsDf.shape[0] == dfEval.shape[0]) and ("SAMPLE" in list(statsDf)) and ("SAMPLE" in list(dfEval)):
-            dfs = [df.set_index('SAMPLE') for df in [statsDf, dfEval]]
-            statsDf = dfs[0].join(dfs[1:])
->>>>>>> 471f8791f104c4ae1ba6bc64bc7a12fc62d0a895
         ### Save the DataFrame to a TSV file
         statsDf.to_csv(outfileName, sep='\t')#, index=False)
 

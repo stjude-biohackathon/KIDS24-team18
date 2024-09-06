@@ -1,0 +1,3 @@
+Sample	aligned_reads	dedup_reads	dedup_reads_percent	dup_reads	dup_reads_percent
+ENCSR707MKB_rep1	150496274.0	124325233.0	82.61	26171041.0	17.39
+ENCSR707MKB_rep2	144407609.0	117172202.0	81.14	27235407.0	18.86

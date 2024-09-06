@@ -1,0 +1,5 @@
+Sample	peak_count	fragment_size	treatment_fragments_total	treatment_fragments_after_filtering	treatment_max_duplicates	treatment_redundant_rate	d	control_fragments_total	control_fragments_after_filtering	control_max_duplicates	control_redundant_rate
+HepG2-POLR2G-GSM3393557	153292	39.0	28171691.0	28171691.0	1.0	0.0	200.0	58331145.0	58331145.0	1.0	0.0
+HepG2-POLR2G-GSM3393557.FDR50	229113	39.0	28171691.0	28171691.0	1.0	0.0	200.0	58331145.0	58331145.0	1.0	0.0
+noC_HepG2-POLR2G-GSM3393557	52046	39.0	28171691.0	28171691.0	1.0	0.0	200.0				
+noC_HepG2-POLR2G-GSM3393557.FDR50	93244	39.0	28171691.0	28171691.0	1.0	0.0	200.0				
