@@ -92,7 +92,7 @@ def parseArgs():
     ### DPK Parser for conversational evaluation.
     dpkParser = subparsers.add_parser('DPK', help='Run evaluation of the Differentially Peaks (DPK), so either differentially binding regions from protocols like ChIP-seq or differentially accessible ones from protocols like ATAC-seq.', parents=[common_parser])
      
-    requiredParams_dpk = dpkParser.add_argument_group('REQUIRED PE parameters')
+    requiredParams_dpk = dpkParser.add_argument_group('REQUIRED DPK parameters')
     requiredParams_dpk.add_argument("-p", "--protocol", help="What protocol is to be considered? if you have protocol not listed, use 'other' and add a name of the protocol in the -n flag.", action="store", type=str, required=True, dest="protocol", choices = ['cutandrun', 'chipseq', 'atacseq', 'other'])
     
     optionalParams_dpk = dpkParser.add_argument_group("Optional DPK parameters")
@@ -245,8 +245,10 @@ def main():
         if params["mode"] == "MEA":
             callGrumpyMEA(params["inputDirectory"], params['outputDirectory'], params["force"], params["apikey"], params["apiType"], params["gptModel"], hidden=params["hidden"])
         elif params["reportType"] == 'dpk':
-            callGrumpyDPKQC(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])
-            callGrumpyDPKExtract(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params["hidden"])
+            callGrumpyDPKQC(params["inputDirectory"], params['outputDirectory'], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"],
+                             params["gptModel"], params["hidden"])
+            callGrumpyDPKExtract(params["inputDirectory"], params['outputDirectory'], params['outfilesPrefix'], params["force"], params["apikey"],
+                                 params["apiType"], params["gptModel"], params["context"], params["hidden"])
     else:
         outfile = open(outfileName, "w")
         outfile.write("API key file was not provided or not accessible, GrumPy's evaluation cannot be performed.")
