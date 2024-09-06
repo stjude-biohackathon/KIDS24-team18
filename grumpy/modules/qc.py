@@ -12,12 +12,12 @@ from pathlib import Path
 import datetime
 
 from grumpy.utils.logger import CustomFormatter
-from grumpy.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
-from grumpy.utils import id_generator, load_template, str2bool, caesar_cipher
-from grumpy.tokenization import getMaxTokenPerModel
-from grumpy.compression import compress_text, decompress_text
-from grumpy.peak_analysis import determinePkCalling, getPeakNumber
-from grumpy.report_parsing import parseStandardRepDir
+from grumpy.utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
+from grumpy.utils.utils import id_generator, load_template, str2bool, caesar_cipher
+from grumpy.utils.tokenization import getMaxTokenPerModel
+from grumpy.utils.compression import compress_text, decompress_text
+from grumpy.utils.peak_analysis import determinePkCalling, getPeakNumber
+from grumpy.utils.report_parsing import parseStandardRepDir
 
 def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefix, force, keyFile, apiType, gptModel, outfileName, 
                   outfileNameShort, hidden=False):
