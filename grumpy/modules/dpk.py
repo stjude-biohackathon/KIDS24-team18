@@ -26,7 +26,7 @@ from openai import AzureOpenAI, AuthenticationError, OpenAI
 
 def callGrumpyDPKQC(inputDirectory, outputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, hidden=False):
 
-    from grumpy import grumpyConnect
+    from connect import grumpyConnect
 
 
     grumpyRole=f"""
@@ -58,7 +58,7 @@ When you find replicates that have low reproducibilty, try to separate report th
 
 def callGrumpyDPKExtract(inputDirectory, outputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, context, hidden=False):
     
-    from grumpy import grumpyConnect
+    from connect import grumpyConnect
     ### load the basicRole for the Grumpy for differentail peak analysis
     basicRole = load_template("dpk")
 
