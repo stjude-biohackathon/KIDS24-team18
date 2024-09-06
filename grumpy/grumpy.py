@@ -602,8 +602,6 @@ def main():
             else:
                 metaFiles = parseMultiQCReportDir(params["inputDirectory"], params["protocol"], params['protocolFullName'], params["apikey"], params["apiType"], params["gptModel"], params["outfilesPrefix"], params['outputDirectory'], hidden=params["hidden"])
                 callGrumpySTD(metaFiles, params["inputType"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
-
-
         elif params["mode"] == 'PE':
             if params["reportType"] in ['gsealist', 'gseareport']:
                 callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
