@@ -25,6 +25,7 @@ from utils.tokenization import getMaxTokenPerModel
 from utils.compression import compress_text, decompress_text
 from utils.peak_analysis import determinePkCalling, getPeakNumber
 from utils.report_parsing import parseStandardRepDir, parseMultiQCReportDir
+from modules.mea import callGrumpyMEA
 from modules.qc import callGrumpySTD
 from modules.dpk import callGrumpyDPKQC
 from modules.dpk import callGrumpyDPKExtract
@@ -619,6 +620,8 @@ def main():
                 callGrumpyGSEA(params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
         elif params["mode"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
+        if params["mode"] == "MEA":
+            callGrumpyMEA(params["inputDirectory"], params['outputDirectory'], params["force"], params["apikey"], params["apiType"], params["gptModel"], hidden=params["hidden"])
         elif params["reportType"] == 'dpk':
             callGrumpyDPKQC(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])
             callGrumpyDPKExtract(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params["hidden"])
