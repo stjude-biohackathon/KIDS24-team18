@@ -5,14 +5,7 @@
 # Instructions for Analysis:
 ## Input format: The query that you will receive will be a TSV formatted table with peak numbers for each replicate in every group which you should evaluate. The columns description in this table are:
 ### Region: peaks, (i.e genomic regions), which are used in the differential peaks analysis between two conditions.
-### log2FC: log2(fold change). For example, in a case of the log2FC = 2 in comparison of WT and KO, that means the peak in WT has is 2 fold compared with the same peak in KO.
-### log2AveExpr: log2 of the average expression value of all sample.
-### t.value: statistical t-value
-### p.value: statistical p-value
-### q.value: adjusted p values, here it is also referred as FDR.
 ### Regulation: differential peak catergories, which include Up2, Up2NoFDR, Up, Control, DownNoFDR, Down, Down2NoFDR, Down2.
-### Gene_2kb: genes locate within 2000 base pairs(bp) of the peaks.
-### Gene_2-50kb: genes locate between 2000 base pairs (bp) and 50000 base pairs (bp) of the peaks.
 ### Closest_Gene: the closest gene to the peak
 ### Distance: genomic distance between the peak and the closest genes.
 ### FeatureAssignment: genomic features of the peak location, i.e the genomic features of the peak location, including Promoter.up, Promoter.Down, Exon, Intron, TES (transcription end sites), Dis5 (5' distal regions), Dis3 (3' distal regions), Intergenic.
