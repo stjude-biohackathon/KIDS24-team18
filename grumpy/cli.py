@@ -19,16 +19,16 @@ import base64
 from pathlib import Path
 
 from math import ceil
-from grumpy.utils.logger import CustomFormatter
-from grumpy.utils.html_processing import decodeHTML
-from grumpy.utils.report_parsing import parseStandardRepDir
-from grumpy.utils.utils import str2bool
-from grumpy.modules.qc import callGrumpySTD
-from grumpy.connect import grumpyConnect
-from grumpy.modules.gsea import GrumpyGSEA
-from grumpy.modules.dpk import callGrumpyDPKQC, callGrumpyDPKExtract
-from grumpy.modules.mea import callGrumpyMEA
-from grumpy.version import __version__
+from utils.logger import CustomFormatter
+from utils.html_processing import decodeHTML
+from utils.report_parsing import parseStandardRepDir
+from utils.utils import str2bool
+from modules.qc import callGrumpySTD
+from connect import grumpyConnect
+from modules.gsea import GrumpyGSEA
+from modules.dpk import callGrumpyDPKQC, callGrumpyDPKExtract
+from modules.mea import callGrumpyMEA
+from version import __version__
 
 from pathlib import Path
 
