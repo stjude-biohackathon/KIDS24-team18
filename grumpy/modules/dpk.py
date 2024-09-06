@@ -56,7 +56,6 @@ When you find replicates that have low reproducibilty, try to separate report th
 
 
 
-
 def callGrumpyDPKExtract(inputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, context, hidden=False):
     
     from grumpy import grumpyConnect
@@ -91,13 +90,13 @@ More importantly, I want you to be as critique, realistic as possible.
     print(comparisonFiles)
     ## for each comparison, generate a query
     for f in comparisonFiles:
-        DF = pd.read_table(f, sep = "\t")
+        DF = pd.read_table(f, sep = "\t") ## since the table is already sorted, 
         DF_kept = DF[['Region','log2FC', 'log2AveExpr', 't.value', 'p.value', 'q.value', 'Regulation', 'Gene_2kb', 'Gene_2-50kb', 'Closest_Gene', 'Distance','FeatureAssignment']]
         AnnoRank_table = DF_kept.to_csv(index = False, sep = "\t")
 
-        outfileName_precise = os.path.basename(f).replace('vout.anno.Ranks.tsv', '.precise.md')
-        outfileName_balanced = os.path.basename(f).replace('vout.anno.Ranks.tsv', '.balanced.md')
-        outfileName_creative= os.path.basename(f).replace('vout.anno.Ranks.tsv', '.creative.md')
+        outfileName_precise = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'precise.md')
+        outfileName_balanced = os.path.basename(f).replace('vout.anno.Ranks.tsv', 'balanced.md')
+        outfileName_creative= os.path.basename(f).replace('vout.anno.Ranks.tsv', 'creative.md')
 
         #outfileName_precise = outfilesPrefix + '.precise.md'
         #outfileName_balanced = outfilesPrefix '.balanced.md'
