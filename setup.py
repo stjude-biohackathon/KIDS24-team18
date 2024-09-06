@@ -39,7 +39,7 @@ setup(
     install_requires=[read_requirements()],
     package_data={
         # Include any data files from the 'grumpy' package
-        'grumpy': ['data/*', 'templates/*'],
+        'grumpy': ['data/*', 'templates/*', 'modules/*', 'utils/*'],
     },
     entry_points={
         'console_scripts': [
