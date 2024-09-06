@@ -1,0 +1,11 @@
+Sample	Bismark_mqc-generalstats-bismark-percent_cpg_meth	Bismark_mqc-generalstats-bismark-percent_chg_meth	Bismark_mqc-generalstats-bismark-percent_chh_meth	Bismark_mqc-generalstats-bismark-total_c	Bismark_mqc-generalstats-bismark-dup_reads_percent	Bismark_mqc-generalstats-bismark-dedup_reads	Cutadapt_mqc-generalstats-cutadapt-percent_trimmed	FastQC_mqc-generalstats-fastqc-percent_duplicates	FastQC_mqc-generalstats-fastqc-percent_gc	FastQC_mqc-generalstats-fastqc-avg_sequence_length	FastQC_mqc-generalstats-fastqc-median_sequence_length	FastQC_mqc-generalstats-fastqc-percent_fails	FastQC_mqc-generalstats-fastqc-total_sequences
+ENCSR707MKB_rep1	82.0	0.8	0.8	3458113377.0	17.39	124325233.0							
+ENCSR707MKB_rep1.R1							1.5200419210846052	17.74927765410159	21.0	101.0	101	9.090909090909092	183781240.0
+ENCSR707MKB_rep1.R2							1.8665008226278392	17.724636599251767	21.0	101.0	101	0.0	183781240.0
+ENCSR707MKB_rep1_val_1								17.80645801508409	21.0	79.09894682307214	80	0.0	181685712.0
+ENCSR707MKB_rep1_val_2								17.859813455532745	20.0	79.34235424082219	80	0.0	181685712.0
+ENCSR707MKB_rep2	81.7	0.8	0.8	3270362719.0	18.86	117172202.0							
+ENCSR707MKB_rep2.R1							1.5544098464274976	19.03843014144212	21.0	101.0	101	9.090909090909092	176121397.0
+ENCSR707MKB_rep2.R2							1.9574067813673042	18.905684817913	21.0	101.0	101	0.0	176121397.0
+ENCSR707MKB_rep2_val_1								18.948128460777596	21.0	79.06762593110739	80	0.0	174053500.0
+ENCSR707MKB_rep2_val_2								19.01003783380399	21.0	79.28746324549635	80	0.0	174053500.0

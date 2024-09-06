@@ -16,21 +16,21 @@ import datetime
 
 import zlib
 import base64
+from pathlib import Path
 
 from math import ceil
 from grumpy.utils.logger import CustomFormatter
-from grumpy.utils.html_processing import decodeHTML, format_html, write_html_file, load_html_template
-from grumpy.utils.utils import str2bool
+from grumpy.utils.html_processing import decodeHTML
 from grumpy.utils.report_parsing import parseStandardRepDir
+from grumpy.utils.utils import str2bool
 from grumpy.modules.qc import callGrumpySTD
 from grumpy.connect import grumpyConnect
 from grumpy.modules.gsea import GrumpyGSEA
+from grumpy.modules.dpk import callGrumpyDPKQC, callGrumpyDPKExtract
+from grumpy.modules.mea import callGrumpyMEA
 from grumpy.version import __version__
 
 from pathlib import Path
-import pandas as pd
-from pybedtools import BedTool
-import numpy as np
 
 def parseArgs():
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
@@ -61,16 +61,18 @@ def parseArgs():
     
     optionalParams_qc = qcParser.add_argument_group("Optional QC parameters")
     optionalParams_qc.add_argument("-n", "--protocolFullName", help="If you specified the 'protocol' (-p) as 'other', you should add here what the type of protocol we deal with here, like for example Hi-C, which will help the LLM to establish the best set of reference guidelines to analyze it. By default = 'unspecified'.", action="store", type=str, required=False, dest="protocolFullName", default='unspecified')
+    optionalParams_qc.add_argument("--inputType", help="Type of the input file, so either this should point directly to the text file / table with some statistics that is relevant, or the directory where the mapping statistics from automapper are located, or to the directory that has the multiqc report inside. By default = 'automapper'.", action="store", type=str, required=False, dest="inputType", default='automapper', choices=['automapper', 'classicStdReportDir', 'multiqc'])
     
+
     ### PE Parser for Automapper and standard reports.
     peParser = subparsers.add_parser('PE', help='Run evaluation of the Pathway Enrichment (PE) analyses for either GSEA results, or typical Pathway Enrichment.', parents=[common_parser])
     
     requiredParams_pe = peParser.add_argument_group('REQUIRED PE parameters')
     requiredParams_pe.add_argument("--inputType", help="What protocol is to be considered? if you have protocol not listed, use 'other' and add a name of the protocol in the -n flag.", action="store", type=str, required=True, dest="inputType", choices = ['genes', 'pathways', 'deseq2'])
     requiredParams_pe.add_argument("-p", "--protocol", help="What protocol is to be considered? if you have protocol not listed, use 'other' and add a name of the protocol in the -n flag.", action="store", type=str, required=True, dest="protocol", choices = ['gsea', 'gsealist', 'other'])
-    requiredParams_pe.add_argument("-r", "--reportType", help="the type of the report to be parsed, currently only 'std' is availible, which stands for standard report. By default='auto', which will set the actual value to 'std' if 'chip' or 'cutrun' is set in '-p' flag, or if the 'gsea' is set in '-p' flag, then it the value will be set to 'gsealist' if the list of pathways was supplied to '-i' flag, or it will be set to 'gseareport' if the '-i' flag pointed to the directory with the GSEApy report. Set to 'decode' and point '-i' to the previous output report from Grumpy to convert HTML to TXT for debugging purposes.", default='auto', action="store", type=str, required=False, dest="reportType", choices = ['auto', 'std', 'gsealist', 'gseareport', 'decode'])
    
     optionalParams_pe = peParser.add_argument_group("Optional PE parameters")
+    optionalParams_pe.add_argument("-r", "--reportType", help="the type of the report to be parsed, currently only 'std' is availible, which stands for standard report. By default='auto', which will set the actual value to 'std' if 'chip' or 'cutrun' is set in '-p' flag, or if the 'gsea' is set in '-p' flag, then it the value will be set to 'gsealist' if the list of pathways was supplied to '-i' flag, or it will be set to 'gseareport' if the '-i' flag pointed to the directory with the GSEApy report. Set to 'decode' and point '-i' to the previous output report from Grumpy to convert HTML to TXT for debugging purposes.", default='auto', action="store", type=str, required=False, dest="reportType", choices = ['auto', 'std', 'gsealist', 'gseareport', 'decode'])
     optionalParams_pe.add_argument("--context", help="Optional context to pass to Grumpy evaluation.", default=None, action="store", type=str, required=False, dest="context")
     optionalParams_pe.add_argument("--species", help="[GSEA specific parameter - not used for typical PE] Define the species which information will be used to try to correctly identify the reference external links to all recognized MSigDB pathways. By default='human_mouse', which is used to provide the broadest spectrum, including links to all known MSigDB signatures from both human and mice, with the priority toward the human descriptions, thus if you did use the mice data, please make sure to change the setting to ppint to 'mouse' specifically. Specify as 'other' for other species, custom gene sets or if you simply wish to skip the attempt to link the pathways to external reference all together.", default="human_mouse", action="store", type=str, required=False, dest="species", choices=["human", "mouse", "human_mouse", "other"])
     optionalParams_pe.add_argument("--inputFile", help="[GSEA specific parameter - not used for typical PE] Define the species which information will be used to try to correctly identify the reference external links to all recognized MSigDB pathways. By default='human_mouse', which is used to provide the broadest spectrum, including links to all known MSigDB signatures from both human and mice, with the priority toward the human descriptions, thus if you did use the mice data, please make sure to change the setting to ppint to 'mouse' specifically. Specify as 'other' for other species, custom gene sets or if you simply wish to skip the attempt to link the pathways to external reference all together.", default="", action="store", type=str, required=False, dest="inputFile", choices=[""])
@@ -90,10 +92,14 @@ def parseArgs():
 
     ### DPK Parser for conversational evaluation.
     dpkParser = subparsers.add_parser('DPK', help='Run evaluation of the Differentially Peaks (DPK), so either differentially binding regions from protocols like ChIP-seq or differentially accessible ones from protocols like ATAC-seq.', parents=[common_parser])
-
-    optionalParams_dpk = dpkParser.add_argument_group("Optional DEG parameters")
+     
+    requiredParams_dpk = dpkParser.add_argument_group('REQUIRED PE parameters')
+    requiredParams_dpk.add_argument("-p", "--protocol", help="What protocol is to be considered? if you have protocol not listed, use 'other' and add a name of the protocol in the -n flag.", action="store", type=str, required=True, dest="protocol", choices = ['cutandrun', 'chipseq', 'atacseq', 'other'])
     
-
+    optionalParams_dpk = dpkParser.add_argument_group("Optional DPK parameters")
+    optionalParams_dpk.add_argument("-c", "--context", help="specific biological context of interest, should be a full path to the file.", action="store", type=str, required=False, default="ignore")
+    
+    
     ### GrumpyChat Parser for conversational evaluation.
     chatParser = subparsers.add_parser('chat', help='Nice chat with the Grumpy AI', parents=[common_parser])
 
@@ -108,7 +114,6 @@ def parseArgs():
     params = vars(parser.parse_args())
 
     lgr.info("Parsed arguments: {}".format(params))
-    lgr.info("Protocol (--protocol flag): {}".format(params["protocol"]))
 
     errors = False
     if not os.path.exists(params["inputDirectory"]):
@@ -171,6 +176,14 @@ def parseArgs():
         else:
             lgr.error(f"The input file '{params['inputDirectory']}' should be an HTML file when working in 'decode' mode. Program was aborted.")
             errors = True
+
+    if params["mode"] == "DPK":
+        if os.path.exists(params["inputDirectory"]):
+            params["reportType"] = "dpk"
+            pass
+        else:
+            lgr.error(f"The input direcoty doesn't exsit, Program was aborted.")
+            errors = True
     
     params["keyFilePresent"] = True
     if not os.path.exists(params["apikey"]):
@@ -188,7 +201,7 @@ def parseArgs():
 
     if "gptModel" in params:
         if params["gptModel"] == "RECOMMENDED" and params['mode'] == "QC":
-            params["gptModel"] = "gpt-3.5-turbo"
+            params["gptModel"] = 'gpt-4o-mini'
         elif params["gptModel"] == "RECOMMENDED" and params['mode'] == "chat":
             params["gptModel"] = "llama3"
     
@@ -217,18 +230,23 @@ def main():
     outfileNameShort = os.path.join(params['outputDirectory'], f"{params['outfilesPrefix']}.concise.md")
 
     if params["keyFilePresent"]:
-        if params["reportType"] == 'std':
-            metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params["outfilesPrefix"], params["force"], 
-                                           params['outputDirectory'], hidden=params["hidden"])
-            callGrumpySTD(metaFile, params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], 
-                          params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
-        elif params["reportType"] in ['gsealist', 'gseareport']:
-            # GrumpyGSEA().run_gsea
-            #callGrumpyGSEA
-            GrumpyGSEA().run_gsea(params["inputType"], params["reportType"], params["inputFile"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], 
-                           params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
-        elif params["reportType"] == 'decode':
+        if params["mode"] == 'QC':
+            if params["inputType"] == "automapper" or params["inputType"] == "classicStdReportDir":
+                metaFile = parseStandardRepDir(params["inputDirectory"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params['outputDirectory'], params['apikey'], params["apiType"], params["gptModel"], hidden=params["hidden"])
+                callGrumpySTD([metaFile], params["inputType"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
+            else:
+                metaFiles = parseMultiQCReportDir(params["inputDirectory"], params["protocol"], params['protocolFullName'], params["apikey"], params["apiType"], params["gptModel"], params["outfilesPrefix"], params['outputDirectory'], hidden=params["hidden"])
+                callGrumpySTD(metaFiles, params["inputType"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
+        elif params["mode"] == 'PE':
+            if params["reportType"] in ['gsealist', 'gseareport']:
+                GrumpyGSEA().run_gsea(params["inputType"], params["reportType"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
+        elif params["mode"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
+        if params["mode"] == "MEA":
+            callGrumpyMEA(params["inputDirectory"], params['outputDirectory'], params["force"], params["apikey"], params["apiType"], params["gptModel"], hidden=params["hidden"])
+        elif params["reportType"] == 'dpk':
+            callGrumpyDPKQC(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])
+            callGrumpyDPKExtract(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params["hidden"])
     else:
         outfile = open(outfileName, "w")
         outfile.write("API key file was not provided or not accessible, GrumPy's evaluation cannot be performed.")

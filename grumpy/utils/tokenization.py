@@ -26,7 +26,7 @@ def getMaxTokenPerModel(gptModel):
         return 32000 # actual value is 32,768
     elif gptModel == "gpt-3.5-turbo":
         return 16000 # actual value is 16,385
-    elif gptModel == "gpt-4o" or gptModel == "gpt4o-api":
+    elif gptModel == "gpt-4o" or gptModel == "gpt4o-api" or gptModel == "gpt-4o-mini":
         return 127000 # actual value is 128,000
     else:
         return 30000 # default value
