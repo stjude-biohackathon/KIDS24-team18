@@ -52,7 +52,7 @@ def callGrumpyMEA(motifsFile, outfilesPrefix, force, keyFile, apiType, gptModel,
     --------
     None
     """
-    from connect import grumpyConnect
+    from grumpy.connect import grumpyConnect
 
     # # Initialize logger for this function
     # lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
