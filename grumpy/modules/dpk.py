@@ -26,7 +26,7 @@ from openai import AzureOpenAI, AuthenticationError, OpenAI
 
 def callGrumpyDPKQC(inputDirectory, outfilesPrefix, force, keyFile, apiType, gptModel, hidden=False):
 
-    from grumpy import grumpyConnect
+    from grumpy.connect import grumpyConnect
 
 
     grumpyRole=f"""
