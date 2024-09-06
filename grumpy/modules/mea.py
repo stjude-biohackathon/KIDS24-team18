@@ -52,7 +52,7 @@ def callGrumpyMEA(motifsFile, outfilesPrefix, force, keyFile, apiType, gptModel,
     --------
     None
     """
-    from grumpy import grumpyConnect
+    from grumpy.connect import grumpyConnect
 
     # # Initialize logger for this function
     # lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
@@ -140,4 +140,3 @@ def callGrumpyMEA(motifsFile, outfilesPrefix, force, keyFile, apiType, gptModel,
 
     ### Connect to Grumpy AI and generate the reports
     # grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
-
