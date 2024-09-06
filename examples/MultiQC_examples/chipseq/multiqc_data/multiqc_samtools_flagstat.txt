@@ -1,0 +1,22 @@
+Sample	total_passed	total_failed	secondary_passed	secondary_failed	supplementary_passed	supplementary_failed	duplicates_passed	duplicates_failed	mapped_passed	mapped_failed	mapped_passed_pct	mapped_failed_pct	paired in sequencing_passed	paired in sequencing_failed	read1_passed	read1_failed	read2_passed	read2_failed	properly paired_passed	properly paired_failed	properly paired_passed_pct	properly paired_failed_pct	with itself and mate mapped_passed	with itself and mate mapped_failed	singletons_passed	singletons_failed	singletons_passed_pct	singletons_failed_pct	with mate mapped to a different chr_passed	with mate mapped to a different chr_failed	with mate mapped to a different chr (mapQ >= 5)_passed	with mate mapped to a different chr (mapQ >= 5)_failed	flagstat_total
+HepG2-AGO1-GSM3393552	101982258	0	0	0	0	0	48229492	0	82303200	0	80.7	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	101982258
+HepG2-AGO2-GSM3393553	64833145	0	0	0	0	0	17116178	0	56159798	0	86.62	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	64833145
+HepG2-CCAR2-GSM3393561	90727426	0	0	0	0	0	27163324	0	75697152	0	83.43	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	90727426
+HepG2-FIP1L1-GSM3393547	37226430	0	0	0	0	0	6325455	0	32884301	0	88.34	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	37226430
+HepG2-PCBP1-GSM3393541	37066253	0	0	0	0	0	3964137	0	31134489	0	84.0	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	37066253
+HepG2-PCBP2-GSM3393542	84523592	0	0	0	0	0	39524784	0	75788410	0	89.67	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	84523592
+HepG2-POLR2G-GSM3393557	50832538	0	0	0	0	0	11924751	0	47245967	0	92.94	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	50832538
+HepG2-input-GSM3393574	75322314	0	0	0	0	0	2983328	0	70496576	0	93.59	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	75322314
+K562-AGO1-GSM3393600	59692282	0	0	0	0	0	16645906	0	46743206	0	78.31	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	59692282
+K562-CCAR2-GSM3393609	39555133	0	0	0	0	0	3951659	0	32031890	0	80.98	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	39555133
+K562-FIP1L1-GSM3393595	42018868	0	0	0	0	0	5417279	0	31378306	0	74.68	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	42018868
+K562-FUS-GSM3393591	32067883	0	0	0	0	0	1627887	0	28006517	0	87.34	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	32067883
+K562-SRSF4-GSM3393577	47338171	0	0	0	0	0	3896661	0	38615549	0	81.57	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	47338171
+K562-SRSF7-GSM3393578	36571063	0	0	0	0	0	4548693	0	33276861	0	90.99	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	36571063
+K562-SRSF9-GSM3393579	34006722	0	0	0	0	0	2345242	0	31913331	0	93.84	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	34006722
+K562-TAF15-GSM3393592	45636099	0	0	0	0	0	7626107	0	38382476	0	84.11	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	45636099
+K562-TARDBP-GSM3393607	78283520	0	0	0	0	0	41528620	0	71313091	0	91.1	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	78283520
+K562-U2AF1-GSM3393580	52739378	0	0	0	0	0	10532124	0	45281673	0	85.86	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	52739378
+K562-U2AF2-GSM3393581	34941256	0	0	0	0	0	3087635	0	29702786	0	85.01	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	34941256
+K562-XRCC5-GSM3393608	63656555	0	0	0	0	0	7521418	0	50611579	0	79.51	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	63656555
+K562-input-GSM3393610	84828894	0	0	0	0	0	4439826	0	80480851	0	94.87	nan	0	0	0	0	0	0	0	0	nan	nan	0	0	0	0	nan	nan	0	0	0	0	84828894

@@ -1,0 +1,4 @@
+Sample	Bismark	Cutadapt	FastQC
+Bismark	0.19.1, 0.24.2		
+Cutadapt		4.4, 4.6	
+FastQC			0.12.1
