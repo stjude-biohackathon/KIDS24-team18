@@ -92,16 +92,16 @@ optional arguments:
 Grumpy is designed to be flexible and extensible, allowing you to define and run LLM Agents tailored to your specific
 research needs. Detailed usage instructions will be provided in future updates.
 
-### Running an example
+### Running an example for PE (Pathway Enrichment)
 
-To run grumpy on an example dataset `RNK_GSE164073_diff.sclera_CoV2_vs_sclera_mock.regulation.rank_`, use the below in
+To run grumpy on an example dataset `PE_examples` with an `OPENAI API Key`, use the below in
 the top level repository folder.
 
 :warning: Make sure you have a file that includes your API Key and update it in `examples/run_grumpy.sh`.
 
 ```bash
-chmod +x examples/run_grumpy.sh
-sh examples/run_grumpy.sh
+chmod +x examples/run_grumpy_pe_openai.sh
+sh examples/run_grumpy_pe_openai.sh
 ```
 
 ## License

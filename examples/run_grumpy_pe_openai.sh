@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables for paths and parameters
-GRUMPY_SCRIPT=./grumpy/cli.py
+GRUMPY_SCRIPT=grumpy
 # Update the API Key File Path
 API_KEY_FILE=.env
 API_TYPE=openai
@@ -16,7 +16,7 @@ MODE="PE"
 INPUT_TYPE="pathways"
 
 # Run Grumpy on a test dataset
-python $GRUMPY_SCRIPT \
+$GRUMPY_SCRIPT \
 $MODE \
 -i $INPUT_FILE_2 \
 --outfilesPrefix $OUTFILES_PREFIX_2 \
