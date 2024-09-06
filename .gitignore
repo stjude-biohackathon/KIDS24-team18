@@ -175,3 +175,4 @@ grumpy_env/
 *.evaluation.html
 .DS_Store
 *.svg
+*.md.prompt.txt
