@@ -97,17 +97,18 @@ research needs. Detailed usage instructions will be provided in future updates.
 To run grumpy on an example dataset `PE_examples` with an `OPENAI API Key`, use the below in
 the top level repository folder.
 
-:warning: Make sure you have a file that includes your API Key and update it in `examples/run_grumpy.sh`.
+:warning: Make sure you have a file that includes your API Key and update it in `examples/run_grumpy_pe_openai.sh`.
 
 ```bash
 chmod +x examples/run_grumpy_pe_openai.sh
 sh examples/run_grumpy_pe_openai.sh
 ```
 
-## Running Grumpy chatbot
+### Running Grumpy chatbot
 
-Please follow instructions in `grumpybot/readme.md` !
+We developed an interactive chatbot to be used with grumpy output using streamlit.
 
+For more information and follow instructions for running it, check out [grumpybot/readme.md](https://github.com/stjude-biohackathon/KIDS24-team18/blob/main/grumpy_bot/README.md)!
 
 ## License
 
@@ -120,6 +121,14 @@ open an issue or submit a pull request.
 
 ## Contact
 
-For any inquiries, please contact:
+For any inquiries, please contact: [Wojciech Rosikiewicz](https://github.com/forrest1988)
 
 ## Team Members
+
+- Wojciech Rosikiewicz (Team Leader)
+- Shaurita D. Hutchins
+- Farzaan Quadri
+- Felicia Iordaci
+- Shaurita D. Hutchins
+- Tarun Mamidi
+- Wenjie Qi
