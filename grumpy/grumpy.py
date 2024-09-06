@@ -601,8 +601,8 @@ def main():
         elif params["reportType"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
         elif params["reportType"] == 'dpk':
-            callGrumpyDPKQC(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])
-            callGrumpyDPKExtract(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params["hidden"])
+            callGrumpyDPKQC(params["inputDirectory"], params['outputDirectory'], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])
+            callGrumpyDPKExtract(params["inputDirectory"], params['outputDirectory'], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params["hidden"])
     else:
         outfile = open(outfileName, "w")
         outfile.write("API key file was not provided or not accessible, GrumPy's evaluation cannot be performed.")
