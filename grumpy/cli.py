@@ -152,7 +152,7 @@ def parseArgs():
 
     if params["mode"] == "PE":
         if params["protocol"] == "gsea":
-            if params["inputType"] == "pathways":
+            if params["inputType"] in ["pathways", "deseq2"]:
                 params["reportType"] = "gseareport"
             else:
                 params["reportType"] = "gsealist"

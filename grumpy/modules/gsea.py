@@ -310,7 +310,7 @@ class GrumpyGSEA:
         lgr.info(f"The Grumpy report was saved to the file '{outfileName}'.")
 
     def run_grumpy_mode(self, mode, keyFile, apiType, gptModel, grumpyRole, 
-                        pathwaysList, outfileName, max_tokens=28000, top_p=0.95, 
+                        pathwaysList, outfileName, max_tokens=28000, top_p=0.95,
                         frequency_penalty=0, presence_penalty=1, temperature=0.1, hidden=True):
         """
         Run the Grumpy analysis in a specific mode with the provided parameters.
@@ -485,5 +485,5 @@ class GrumpyGSEA:
             self.run_grumpy_mode(mode, **common_params, **params)
         
         # Generate the final HTML report based on the evaluations
-        self.call_reporter(inputFile, inputType, referencePathwaysList, species, outfileName_precise, outfileName_balanced,
+        self.call_reporter(inputType, referencePathwaysList, species, outfileName_precise, outfileName_balanced,
                             outfileName_creative, outfileName_report, grumpyRole, pathwaysList, context, outfileNamePrefix)
