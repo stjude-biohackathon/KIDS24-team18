@@ -11,13 +11,13 @@ from pathlib import Path
 
 import datetime
 
-from utils.logger import CustomFormatter
-from utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
-from utils.utils import id_generator, load_template, str2bool, caesar_cipher
-from utils.tokenization import getMaxTokenPerModel
-from utils.compression import compress_text, decompress_text
-from utils.peak_analysis import determinePkCalling, getPeakNumber
-from utils.report_parsing import parseStandardRepDir
+from grumpy.utils.logger import CustomFormatter
+from grumpy.utils.html_processing import extract_section, decodeHTML, format_html, write_html_file, load_html_template
+from grumpy.utils.utils import id_generator, load_template, str2bool, caesar_cipher
+from grumpy.utils.tokenization import getMaxTokenPerModel
+from grumpy.utils.compression import compress_text, decompress_text
+from grumpy.utils.peak_analysis import determinePkCalling, getPeakNumber
+from grumpy.utils.report_parsing import parseStandardRepDir
 
 from openai import AzureOpenAI, AuthenticationError, OpenAI
 
@@ -57,7 +57,7 @@ def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, k
     --------
     None
     """
-    from grumpy import grumpyConnect
+    from grumpy.connect import grumpyConnect
 
     # Initialize logger for this function
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)
@@ -126,4 +126,3 @@ def callGrumpySTD(metaFile, protocol, protocolFullName, outfilesPrefix, force, k
     ### Connect to Grumpy AI and generate the reports
     grumpyConnect(keyFile, apiType, gptModel, grumpyRole, QC_table, outfileName)
     # grumpyConnect(keyFile, apiType, gptModel, grumpyRoleShorter, QC_table, outfileNameShort)
-
