@@ -116,7 +116,7 @@ def generate_sample_prompt(row, protocol):
 # Function to process each row and return the quality assessment
 def assess_sample_quality(df, protocol, keyFile, apiType, gptModel, outfileName=".tmpSampleEval.txt", hidden=False, sampleColName='SAMPLE'):
     assessments = []
-    from grumpy import grumpyConnect
+    from connect import grumpyConnect
 
     # Loop through each row in the DataFrame
     for index, row in df.iterrows():
