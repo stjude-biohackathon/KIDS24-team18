@@ -3,7 +3,7 @@
 # Define variables for paths and parameters
 GRUMPY_SCRIPT=grumpy
 # Update the API Key File Path
-API_KEY_FILE=/Users/wqi65/Documents/BioHack/KIDS24_Grumpy_API
+API_KEY_FILE=.env
 API_TYPE=openai
 MODEL_NAME=gpt-4o-mini #choose from gpt-4o, gpt-4o-mini, llama3, meditron, medllama2
 
