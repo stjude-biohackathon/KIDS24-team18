@@ -55,7 +55,7 @@ def callGrumpySTD(metaFile, inputType, protocol, protocolFullName, outfilesPrefi
     --------
     None
     """
-    from connect import grumpyConnect
+    from grumpy.connect import grumpyConnect
 
     # Initialize logger for this function
     lgr = logging.getLogger(inspect.currentframe().f_code.co_name)

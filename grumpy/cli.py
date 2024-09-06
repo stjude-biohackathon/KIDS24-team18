@@ -28,7 +28,7 @@ from grumpy.connect import grumpyConnect
 from grumpy.modules.gsea import GrumpyGSEA
 from grumpy.modules.dpk import callGrumpyDPKQC, callGrumpyDPKExtract
 from grumpy.modules.mea import callGrumpyMEA
-from version import __version__
+from grumpy.version import __version__
 
 from pathlib import Path
 
@@ -182,7 +182,7 @@ def parseArgs():
             params["reportType"] = "dpk"
             pass
         else:
-            lgr.error(f"The input direcoty doesn't exsit, Program was aborted.")
+            lgr.error(f"The input directory doesn't exist, Program was aborted.")
             errors = True
     
     params["keyFilePresent"] = True
