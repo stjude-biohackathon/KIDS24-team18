@@ -175,3 +175,4 @@ grumpy_env/
 .DS_Store
 *.png
 *.svg
+*.md.prompt.txt
