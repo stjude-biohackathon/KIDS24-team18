@@ -108,7 +108,7 @@ sh examples/run_grumpy_pe_openai.sh
 
 We developed an interactive chatbot to be used with grumpy output using streamlit.
 
-For more information and follow instructions for running it, check out [grumpybot/readme.md](https://github.com/stjude-biohackathon/KIDS24-team18/blob/main/grumpy_bot/README.md)!
+For more information and instructions for running it, check out [grumpybot/readme.md](https://github.com/stjude-biohackathon/KIDS24-team18/blob/main/grumpy_bot/README.md)!
 
 ## License
 
