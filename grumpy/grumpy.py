@@ -27,6 +27,8 @@ from utils.peak_analysis import determinePkCalling, getPeakNumber
 from utils.report_parsing import parseStandardRepDir, parseMultiQCReportDir
 from modules.qc import callGrumpySTD
 from modules.mea import callGrumpyMEA
+from modules.dpk import callGrumpyDPKQC
+from modules.dpk import callGrumpyDPKExtract
 
 from pathlib import Path
 import tiktoken
@@ -612,6 +614,9 @@ def main():
         if params["mode"] == "MEA":
             callGrumpyMEA(params["inputDirectory"], params['outputDirectory'], params["force"], params["apikey"], params["apiType"], params["gptModel"], hidden=params["hidden"])
 
+        elif params["reportType"] == 'dpk':
+            callGrumpyDPKQC(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["hidden"])
+            callGrumpyDPKExtract(params["inputDirectory"], params['outfilesPrefix'], params["force"], params["apikey"], params["apiType"], params["gptModel"], params["context"], params["hidden"])
     else:
         outfile = open(outfileName, "w")
         outfile.write("API key file was not provided or not accessible, GrumPy's evaluation cannot be performed.")
