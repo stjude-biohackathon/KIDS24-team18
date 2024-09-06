@@ -238,7 +238,7 @@ def main():
                 callGrumpySTD(metaFiles, params["inputType"], params["protocol"], params['protocolFullName'], params["outfilesPrefix"], params["force"], params["apikey"], params["apiType"], params["gptModel"], outfileName, outfileNameShort, hidden=params["hidden"])
         elif params["mode"] == 'PE':
             if params["reportType"] in ['gsealist', 'gseareport']:
-                GrumpyGSEA().run_gsea(params["inputType"], params["reportType"], params["inputFile"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"], 
+                GrumpyGSEA().run_gsea(params["inputType"], params["reportType"], params["inputFile"], params["protocol"], params["inputDirectory"], params["force"], params["apikey"],
                                         params["apiType"], params["gptModel"], params["context"], params['outfilesPrefix'], params["hidden"], params["species"])
         elif params["mode"] == 'decode':
             decodeHTML(params["protocol"], params["inputDirectory"])
