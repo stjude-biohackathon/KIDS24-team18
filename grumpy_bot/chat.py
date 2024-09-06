@@ -54,19 +54,10 @@ def sidebar_links():
     for link_text, link_url in contact_link_dict.items():
         st.sidebar.markdown(f"[{link_text}]({link_url})")
 
-st.session_state["model"] = st.sidebar.selectbox(
-    "Select your model?",
-    ("llama3.1", "gpt-4o", "gpt-4o-mini", "meditron"),
-)
-
-if st.session_state["model"] in ["gpt-4o", "gpt-4o-mini"]:
-    st.session_state["api_key"] = st.sidebar.text_input("Paste you OpenAI API key here: ", "sk-xxxxxxx", type = "password")
-    st.session_state["base_url"] = "https://api.openai.com/v1"
-    # st.session_state["client"] = OpenAI(api_key=password)
-else:
-    st.session_state["api_key"] = 'ollama'
-    st.session_state["base_url"] = "http://localhost:11434/v1"
-    # st.session_state["client"] = OpenAI(api_key=st.session_state["password"], base_url = st.session_state["base_url"])
+st.session_state["model"] =  "gpt-4o-mini"
+st.session_state["api_key"] = ''
+st.session_state["base_url"] = "https://api.openai.com/v1"
+# st.session_state["client"] = OpenAI(api_key=password)
 
 prompt = ChatPromptTemplate.from_messages(
     [
