@@ -5,3 +5,5 @@ unstructured[all-docs]
 pydantic
 lxml
 ipykernel
+pytesseract
+langchain_ollama
