@@ -7,9 +7,9 @@ API_KEY_FILE=.env
 API_TYPE=openai
 MODEL_NAME=gpt-4o #choose from gpt-4o, gpt-4o-mini, llama3, meditron, medllama2
 
-INPUT_FILE_2="./examples/RNK_GSE164073_diff.sclera_CoV2_vs_sclera_mock.regulation.rank_/GMT_h.all.v2023.2.Hs.symbols"
-OUTFILES_PREFIX_2="./examples/GSE164073_sclera"
-CONTEXT_FILE_2="./examples/context.txt"
+INPUT_FILE_2="./examples/PE_examples/GMT_h.all.v2023.2.Hs.symbols"
+OUTFILES_PREFIX_2="./examples/PE_examples/GSE164073_sclera"
+CONTEXT_FILE_2="./examples/PE_examples/context.txt"
 PROTOCOL_2="gsea"
 REPORT_2="gseareport"
 MODE="PE"
